@@ -13,7 +13,7 @@
       "id": "c01",
       "name": "卡面 01",
       "weight": 1,
-      "stock": 3,
+      "stock": 2,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
     },
@@ -37,7 +37,7 @@
       "id": "c04",
       "name": "卡面 04",
       "weight": 1,
-      "stock": 2,
+      "stock": 1,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
@@ -45,7 +45,7 @@
       "id": "c05",
       "name": "卡面 05",
       "weight": 1,
-      "stock": 3,
+      "stock": 2,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
     },
@@ -61,7 +61,7 @@
       "id": "c07",
       "name": "卡面 07",
       "weight": 1,
-      "stock": 2,
+      "stock": 1,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
     },
@@ -90,5 +90,34 @@
     "白瑶",
     "转体"
   ],
-  "records": []
+  "records": [
+    {
+      "name": "西湖龙井茶",
+      "time": "2026-10-02 11:44",
+      "test": false,
+      "empty": false,
+      "cards": [
+        {
+          "id": "c04",
+          "name": "卡面 04",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
+        },
+        {
+          "id": "c05",
+          "name": "卡面 05",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
+        },
+        {
+          "id": "c07",
+          "name": "卡面 07",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
+        },
+        {
+          "id": "c01",
+          "name": "卡面 01",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
+        }
+      ]
+    }
+  ]
 }
