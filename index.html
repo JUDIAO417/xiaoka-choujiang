@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>小卡抽奖机 · Wu Ye 珍藏卡池</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='10' width='52' height='44' rx='7' fill='%23A78BFA'/%3E%3Crect x='12' y='16' width='40' height='32' rx='4' fill='%23F0ECFA'/%3E%3Cpath d='M32 22l3 6.5 7 .7-5.3 4.6 1.6 6.9L32 36.8l-6.3 3.9 1.6-6.9L22 29.2l7-.7z' fill='%23F472B6'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap">
@@ -644,7 +647,7 @@ input,select,textarea{ font-family:inherit; }
           <input type="number" id="minWinnersInput" min="0" step="1">
           <span class="label-small" style="align-self:center">设为 0 表示不启用保底</span>
         </div>
-        <div class="form-hint" id="winStatsHint">保底机制（动态）：保底 N 人 = 本场最终保证 N 人抽中。参与者多于 N 人时，前几人同样按抽空概率可能轮空；系统会按剩余机会动态收紧抽空率，保证最终达到 N 人（需参与者 ≥ N 且库存 ≥ N×4）。抽空概率设为 100% 时必定抽空（优先于保底）。</div>
+        <div class="form-hint" id="winStatsHint">保底机制：保底 N 人 = 本场从参与者中随机 N 人必中、其余人轮空（前 N 名同样可能轮空）。系统按「剩余轮空名额 / 剩余参与机会」动态调整轮空率，最终恰好 N 人中奖（需参与者 ≥ N 且库存 ≥ N×4）。抽空概率设为 100% 时必定全员抽空（优先于保底）。</div>
         <div class="form-hint" id="winStatsLine" style="color:var(--gold);font-size:13px"></div>
       </div>
       <div class="adm-section" id="tab-data">
@@ -1386,19 +1389,20 @@ function countWinners(){
 }
 function currentWinRate(){
   var minW = parseInt(state.settings.minWinners, 10) || 0;
-  var winners = countWinners();
   var er = parseInt(state.settings.emptyRate, 10) || 0;
   if(er >= 100) return 0;
-  var rate = 100 - er;
-  if(minW > 0 && winners < minW){
-    var remainAll = state.names.filter(function(n){
+  if(minW > 0){
+    var totalPeople = state.names.filter(function(n){ return !isTestName(n); }).length;
+    var emptyDone = state.records.filter(function(r){ return !r.test && r.empty; }).length;
+    var remainPeople = state.names.filter(function(n){
       return !isTestName(n) && !state.records.some(function(r){ return r.name === n; });
     }).length;
-    var needed = Math.max(0, minW - winners);
-    var maxEmpty = 100 - Math.min(100, Math.round(needed * 100 / Math.max(1, remainAll)));
-    rate = 100 - Math.max(0, Math.min(er, maxEmpty));
+    var emptyTarget = Math.max(0, totalPeople - minW);
+    var emptyNeed = Math.max(0, emptyTarget - emptyDone);
+    var emptyRateNow = Math.round(emptyNeed * 100 / Math.max(1, remainPeople));
+    return Math.max(0, 100 - emptyRateNow);
   }
-  return Math.max(0, rate);
+  return Math.max(0, 100 - er);
 }
 function renderAdminSettings(){
   el('weightMode').value = state.settings.weightMode || 'equal';
@@ -1415,11 +1419,14 @@ function renderAdminSettings(){
   var total = totalStock();
   var line = '当前已中奖 ' + winners + ' 人';
   if(minW > 0){
-    var left = Math.max(0, minW - winners);
-    var remainAll = state.names.filter(function(n){
+    var totalPeople = state.names.filter(function(n){ return !isTestName(n); }).length;
+    var emptyDone = state.records.filter(function(r){ return !r.test && r.empty; }).length;
+    var remainPeople = state.names.filter(function(n){
       return !isTestName(n) && !state.records.some(function(r){ return r.name === n; });
     }).length;
-    line += ' · 保底 ' + minW + ' 人 · 剩余保底名额 ' + left + ' 人 · 剩余机会 ' + remainAll + ' 人';
+    var emptyTarget = Math.max(0, totalPeople - minW);
+    var left = Math.max(0, minW - winners);
+    line += ' · 保底 ' + minW + ' 人 · 已轮空 ' + emptyDone + ' 人 · 剩余机会 ' + remainPeople + ' 人';
   }
   line += ' · 本轮动态抽中概率 ' + currentWinRate() + '%';
   if(minW > 0 && minW * 4 > total){
@@ -1569,28 +1576,30 @@ function startDraw(){
     toast('剩余库存不足 4 张，本场抽奖结束：请管理员补充卡片数量或重置抽奖池');
     return;
   }
-  /* 抽空判定：按抽空概率可能抽空（4 张全空、不消耗库存）；测试账号同样参与。
-     保底机制为动态保障：参与者多于保底人数时，前几人同样可能轮空，系统按剩余机会动态收紧抽空率，
-     保证最终达到保底中奖人数（名单人数不足保底时无法满足，会提示）。 */
+  /* 抽空判定：
+     - 抽空概率 100%：必定抽空（管理员明确设置时优先于保底，全员可空）
+     - 开启保底 N 人：从参与者中随机 N 人必中，其余人轮空——前 N 名同样可能轮空，
+       系统按「剩余轮空名额 / 剩余参与机会」动态调整，最终恰好 N 人中奖（参与者需 ≥ N）
+     - 未开启保底：按抽空概率可能抽空 */
   var emptyRoll = false;
   var minW = parseInt(state.settings.minWinners, 10) || 0;
   var winners = countWinners();
   var er = parseInt(state.settings.emptyRate, 10) || 0;
   if(er >= 100){
-    /* 抽空概率 100%：必定抽空（管理员明确设置为 100% 时优先于保底，真正全员可空） */
     emptyRoll = true;
+  }else if(minW > 0){
+    /* 保底模式：恰好 N 人必中，其余轮空 */
+    var totalPeople = state.names.filter(function(n){ return !isTestName(n); }).length;
+    var emptyDone = state.records.filter(function(r){ return !r.test && r.empty; }).length;
+    var remainPeople = state.names.filter(function(n){
+      return !isTestName(n) && !state.records.some(function(r){ return r.name === n; });
+    }).length;
+    var emptyTarget = Math.max(0, totalPeople - minW);
+    var emptyNeed = Math.max(0, emptyTarget - emptyDone);
+    var emptyRateNow = Math.round(emptyNeed * 100 / Math.max(1, remainPeople));
+    if(Math.random() * 100 < emptyRateNow) emptyRoll = true;
   }else if(er > 0){
-    var erNow = er;
-    if(minW > 0 && winners < minW){
-      /* 尚未达到保底：计算剩余未抽的真实参与者（含当前这次），动态压缩抽空率保证最终保底人数 */
-      var remainAll = state.names.filter(function(n){
-        return !isTestName(n) && !state.records.some(function(r){ return r.name === n; });
-      }).length;
-      var needed = Math.max(0, minW - winners);
-      var maxEmpty = 100 - Math.min(100, Math.round(needed * 100 / Math.max(1, remainAll)));
-      erNow = Math.max(0, Math.min(er, maxEmpty));
-    }
-    if(Math.random() * 100 < erNow) emptyRoll = true;
+    if(Math.random() * 100 < er) emptyRoll = true;
   }
   var picks = [];
   if(!emptyRoll){
