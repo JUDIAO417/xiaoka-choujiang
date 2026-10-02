@@ -657,6 +657,8 @@ input,select,textarea{ font-family:inherit; }
         <div class="adm-sec-title">本场抽奖</div>
         <button id="btnResetPool" class="btn" type="button">重置抽奖池（所有卡片恢复可抽）</button>
         <div class="form-hint">重置后所有被抽中的卡片重新进入奖池，但已抽奖记录与「每个名字限抽一次」规则不变。</div>
+        <button id="btnClearRecords" class="btn btn-danger" type="button">一键清除抽奖记录（清空记录并恢复全部库存）</button>
+        <div class="form-hint">清空所有抽奖记录、恢复所有卡片库存；名单与卡片保持不变，所有人都可重新抽奖。</div>
         <div class="adm-sec-title">危险操作</div>
         <button id="btnReset" class="btn btn-danger" type="button">恢复出厂（清空全部数据）</button>
       </div>
@@ -1618,6 +1620,7 @@ function animateSlot(idx, finalCard, pool, done){
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
           c3.style.transform = 'rotateY(' + (endAngle + 180) + 'deg)';
+          frontImg.src = finalCard.img;
           slot.classList.add('revealed');
           var tag = slot.querySelector('.slot-tag');
           tag.innerHTML = '';
@@ -1968,6 +1971,18 @@ function bindAdmin(){
       saveAll();
       renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
       toast('抽奖池已重置（库存已恢复）');
+    });
+  });
+  el('btnClearRecords').addEventListener('click', function(){
+    confirmDialog('一键清除抽奖记录', '将清空全部抽奖记录并恢复所有卡片库存（名单与卡片保持不变，所有人都可重新抽奖），是否继续？').then(function(ok){
+      if(!ok) return;
+      state.records = [];
+      state.cards.forEach(function(c){
+        c.stock = (typeof c.base === 'number' ? c.base : (typeof c.stock === 'number' ? c.stock : 1));
+      });
+      saveAll();
+      renderAdminRecords(); renderRecords(); renderGallery(); renderTicker(); renderStatus();
+      toast('抽奖记录已清除，库存已恢复');
     });
   });
   el('btnReset').addEventListener('click', function(){
