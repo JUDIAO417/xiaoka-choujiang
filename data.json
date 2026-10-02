@@ -20,16 +20,16 @@
       "id": "c02",
       "name": "卡面 02",
       "weight": 1,
-      "stock": 3,
-      "base": 3,
+      "stock": 0,
+      "base": 0,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
     },
     {
       "id": "c03",
       "name": "卡面 03",
       "weight": 1,
-      "stock": 3,
-      "base": 3,
+      "stock": 0,
+      "base": 0,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
     },
     {
