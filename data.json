@@ -4,15 +4,15 @@
     "weightMode": "equal",
     "backUrl": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh",
     "notice": "邮费自理 · 每个账号限抽一次",
-    "emptyRate": 70,
-    "minWinners": 10
+    "emptyRate": 10,
+    "minWinners": 0
   },
   "cards": [
     {
       "id": "c01",
       "name": "卡面 01",
       "weight": 1,
-      "stock": 1,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
     },
@@ -20,7 +20,7 @@
       "id": "c02",
       "name": "卡面 02",
       "weight": 1,
-      "stock": 0,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
     },
@@ -28,7 +28,7 @@
       "id": "c03",
       "name": "卡面 03",
       "weight": 1,
-      "stock": 0,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
     },
@@ -36,15 +36,15 @@
       "id": "c04",
       "name": "卡面 04",
       "weight": 1,
-      "stock": 0,
-      "base": 0,
+      "stock": 3,
+      "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
     {
       "id": "c05",
       "name": "卡面 05",
       "weight": 1,
-      "stock": 0,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
     },
@@ -52,7 +52,7 @@
       "id": "c06",
       "name": "卡面 06",
       "weight": 1,
-      "stock": 0,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
     },
@@ -60,51 +60,19 @@
       "id": "c07",
       "name": "卡面 07",
       "weight": 1,
-      "stock": 0,
-      "base": 0,
+      "stock": 3,
+      "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
     },
     {
       "id": "c08",
       "name": "卡面 08",
       "weight": 1,
-      "stock": 1,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
   ],
-  "names": [
-    "阿明",
-    "阿花"
-  ],
-  "records": [
-    {
-      "name": "1433223",
-      "time": "2026-10-02 10:49",
-      "test": true,
-      "empty": false,
-      "cards": [
-        {
-          "id": "c05",
-          "name": "卡面 05",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
-        },
-        {
-          "id": "c01",
-          "name": "卡面 01",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
-        },
-        {
-          "id": "c06",
-          "name": "卡面 06",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
-        },
-        {
-          "id": "c02",
-          "name": "卡面 02",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
-        }
-      ]
-    }
-  ]
+  "names": [],
+  "records": []
 }
