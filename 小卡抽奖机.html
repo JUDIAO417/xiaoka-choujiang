@@ -238,7 +238,7 @@ input,select,textarea{ font-family:inherit; }
 /* 卡册 */
 .gallery{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px; }
 .g-card{ cursor:pointer; perspective:900px; position:relative; }
-.g-card .card3d{ width:100%; aspect-ratio:9/16; }
+.g-card .card3d{ width:100%; aspect-ratio:9/16; height:auto; }
 .g-card .face{ border-radius:10px; }
 .g-card .name{
   margin-top:8px; font-size:13px; text-align:center; color:var(--text-dim);
@@ -246,7 +246,7 @@ input,select,textarea{ font-family:inherit; }
 }
 .g-card .flag{
   position:absolute; top:8px; right:8px; z-index:3;
-  font-size:11px; padding:2px 9px; border-radius:12px; pointer-events:none;
+  font-size:12px; padding:2px 9px; border-radius:12px; pointer-events:none;
   max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .g-card .flag.out{ color:#fff; background:rgba(248,113,113,.85); }
@@ -409,7 +409,7 @@ input,select,textarea{ font-family:inherit; }
 @media (max-width:760px){
   .wrap{ padding:0 14px; }
   .brand h1{ font-size:18px; }
-  .brand .sub{ font-size:10px; }
+  .brand .sub{ font-size:12px; }
   .stage-viewport{ height:330px; border-radius:16px; }
   .slot{ width:118px; }
   .slot .card3d{ width:118px; height:210px; }
@@ -764,10 +764,9 @@ function ghToken(){
   try{ return localStorage.getItem(TOKEN_KEY) || ''; }catch(e){ return ''; }
 }
 function ghHeaders(token){
-  return {
-    'Authorization': 'Bearer ' + (token || ''),
-    'Accept': 'application/vnd.github+json'
-  };
+  var h = { 'Accept': 'application/vnd.github+json' };
+  if(token) h['Authorization'] = 'Bearer ' + token;
+  return h;
 }
 function ghLoad(){
   setSync('loading', '数据连接中…');
