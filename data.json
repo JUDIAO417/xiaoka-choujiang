@@ -369,7 +369,12 @@
           "name": "卡面 06",
           "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
         }
-      ]
+      ],
+      "receiver": {
+        "name": "111",
+        "phone": "13188100528",
+        "addr": "广东佛山建元下街九号四楼a301"
+      }
     },
     {
       "name": "转体",
