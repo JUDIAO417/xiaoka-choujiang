@@ -626,6 +626,14 @@ input,select,textarea{ font-family:inherit; }
           </select>
         </div>
         <div class="form-hint">自定义权重模式下，权重值越大被抽中概率越高。剩余卡片越少、参与人数越多，概率随之自动变化。</div>
+        <div class="adm-sec-title">抽奖锁定</div>
+        <div class="form-row" style="flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1">
+            <input type="checkbox" id="lockedInput" style="width:18px;height:18px;accent-color:var(--accent)">
+            <span>锁定抽奖（参与者暂不能抽奖，但可浏览卡池与记录）</span>
+          </label>
+        </div>
+        <div class="form-hint">发布页面后、正式开放前，可先开启锁定；开放时关闭锁定即可。锁定状态下抽奖按钮显示「抽奖已锁定」。</div>
         <div class="adm-sec-title">抽空概率（%）</div>
         <div class="form-row">
           <input type="number" id="emptyRateInput" min="0" max="100" step="1">
@@ -747,7 +755,7 @@ var isDrawing = false;
 function defaultState(){
   return {
     version: 4,
-    settings: { weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0 },
+    settings: { weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false },
     cards: INITIAL_CARDS.map(function(c){ return Object.assign({}, c); }),
     names: [],
     records: []
@@ -762,7 +770,7 @@ function migrateState(s){
       c.stock = (typeof c.stock === 'number' && c.stock >= 0) ? c.stock : (c.drawn === false ? 3 : 0);
       c.base = (typeof c.base === 'number' && c.base >= 0) ? c.base : c.stock;
     });
-    s.settings = Object.assign({ weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0 }, s.settings || {});
+    s.settings = Object.assign({ weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false }, s.settings || {});
   }
   return s;
 }
@@ -1071,6 +1079,12 @@ function renderStatus(){
   var userDrawn = currentName && !isTestName(currentName) && state.records.some(function(r){ return r.name === currentName; });
   el('statusNote').textContent = '剩余总库存 ' + totalStock() + ' 张 · 可抽卡面 ' + pool.length + ' 种 · 每次抽出 4 张（同轮不重复）';
   el('statusPill').textContent = '参与者 ' + state.names.length + ' 人 · 已抽 ' + doneCount + ' 人 · 未抽 ' + Math.max(0, leftNames) + ' 人';
+  if(state.settings.locked){
+    el('btnDraw').disabled = true;
+    el('btnDraw').textContent = '抽奖已锁定';
+    el('statusNote').textContent = '抽奖暂未开放，请等待管理员开放后参与';
+    return;
+  }
   if(userDrawn){
     el('btnDraw').disabled = true;
     el('btnDraw').textContent = '本名已抽过';
@@ -1384,6 +1398,7 @@ function renderAdminSettings(){
   el('ghTokenInput').placeholder = ghToken() ? 'Token 已配置（已隐藏）' : 'ghp_ 开头的 GitHub Token';
   el('emptyRateInput').value = state.settings.emptyRate;
   el('minWinnersInput').value = state.settings.minWinners;
+  el('lockedInput').checked = !!state.settings.locked;
   var winners = countWinners();
   var minW = parseInt(state.settings.minWinners, 10) || 0;
   var pool = availableCards().length;
@@ -1524,6 +1539,10 @@ function showUserResult(recOrName){
 function startDraw(){
   if(isDrawing) return;
   if(!currentName){ openGate(); return; }
+  if(state.settings.locked){
+    toast('抽奖已锁定，请等待管理员开放后再来');
+    return;
+  }
   if(!isTestName(currentName) && state.records.some(function(r){ return r.name === currentName; })){
     toast('「' + currentName + '」已抽过奖，本名全场限抽一次');
     showUserResult(currentName);
@@ -1926,6 +1945,13 @@ function bindAdmin(){
     saveAll();
     renderAdminSettings();
     toast('保底中奖人数已设为 ' + (v > 0 ? v + ' 人' : '不启用'));
+  });
+  el('lockedInput').addEventListener('change', function(){
+    state.settings.locked = this.checked;
+    saveAll();
+    renderAdminSettings();
+    renderStatus();
+    toast(this.checked ? '抽奖已锁定：参与者暂不能抽奖' : '抽奖已开放：参与者可以抽奖了');
   });
   el('btnSaveBack').addEventListener('click', function(){
     var file = el('backFile').files[0];
