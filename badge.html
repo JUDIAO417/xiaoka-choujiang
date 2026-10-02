@@ -170,6 +170,19 @@ input,select,textarea{ font-family:inherit; }
   box-shadow:inset 0 0 0 4px rgba(232,195,126,.35), inset 0 0 0 7px rgba(20,14,40,.55), inset 0 0 0 9px rgba(232,195,126,.22);
   pointer-events:none;
 }
+/* 金属别针背面：银色圆盘 + 安全别针 */
+.badge-back{
+  background:
+    radial-gradient(circle at 32% 27%, #f4f4f7 0%, #cfcfd6 16%, #a2a2ab 38%, #777780 60%, #43434c 100%);
+}
+.badge-back .badge-groove{
+  position:absolute; width:70%; height:70%; border-radius:50%; left:15%; top:15%;
+  box-shadow:inset 0 4px 10px rgba(0,0,0,.55), inset 0 -3px 6px rgba(255,255,255,.4);
+}
+.badge-back .pin{
+  position:absolute; width:86%; height:auto; left:7%; top:50%;
+  transform:translateY(-50%); filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));
+}
 .hint{
   position:absolute; left:50%; transform:translateX(-50%);
   bottom:14px; font-size:12px; color:var(--text-faint); letter-spacing:.06em;
@@ -612,17 +625,8 @@ input,select,textarea{ font-family:inherit; }
           <input type="text" id="noticeInput" placeholder="主页提示语">
           <button id="btnSaveNotice" class="btn" type="button">保存</button>
         </div>
-        <div class="adm-sec-title">徽章背图</div>
-        <div class="back-preview">
-          <img id="backPreview" alt="徽章背">
-          <div style="flex:1">
-            <div class="form-row" style="margin-bottom:8px">
-              <input type="file" id="backFile" accept="image/*">
-              <input type="url" id="backUrl" placeholder="徽章背图片链接（可选）">
-            </div>
-            <button id="btnSaveBack" class="btn" type="button">保存徽章背</button>
-          </div>
-        </div>
+        <div class="adm-sec-title">徽章背面</div>
+        <div class="form-hint">背面固定为金属别针样式（银色圆盘 + 安全别针），无需配置。</div>
         <div class="adm-sec-title">抽奖权重</div>
         <div class="form-row">
           <select id="weightMode">
@@ -1043,10 +1047,18 @@ function buildCardEl(card){
   fimg.src = card.img; fimg.alt = card.name; fimg.loading = 'lazy';
   front.appendChild(fimg);
   var back = document.createElement('div');
-  back.className = 'face face-back face-frame';
-  var bimg = document.createElement('img');
-  bimg.src = state.settings.backUrl; bimg.alt = '徽章背'; bimg.loading = 'lazy';
-  back.appendChild(bimg);
+  back.className = 'face face-back face-frame badge-back';
+  /* 金属别针背面（CSS/SVG 绘制，无需图片） */
+  back.innerHTML = '<span class="badge-groove"></span>'
+    + '<svg class="pin" viewBox="0 0 300 96" fill="none" aria-hidden="true">'
+    + '<circle cx="46" cy="48" r="15" stroke="#cfcfd6" stroke-width="6"/>'
+    + '<circle cx="46" cy="48" r="10" stroke="#8b8b94" stroke-width="2"/>'
+    + '<circle cx="46" cy="48" r="3.5" fill="#b9b9c0"/>'
+    + '<path d="M 54 58 C 100 66, 160 62, 205 48 L 262 28" stroke="#d8d8de" stroke-width="6" stroke-linecap="round"/>'
+    + '<path d="M 205 48 L 262 28 L 262 40" stroke="#d8d8de" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>'
+    + '<circle cx="263" cy="34" r="4.5" fill="#d8d8de"/>'
+    + '<path d="M 258 40 C 246 47, 234 51, 222 52" stroke="#c2c2ca" stroke-width="4" stroke-linecap="round"/>'
+    + '</svg>';
   wrap.appendChild(front);
   wrap.appendChild(back);
   return wrap;
@@ -1423,7 +1435,6 @@ function currentWinRate(){
 }
 function renderAdminSettings(){
   el('weightMode').value = state.settings.weightMode || 'equal';
-  el('backPreview').src = state.settings.backUrl || BACK_DEFAULT;
   el('noticeInput').value = state.settings.notice || '';
   el('ghTokenInput').value = ghToken();
   el('ghTokenInput').placeholder = ghToken() ? 'Token 已配置（已隐藏）' : 'ghp_ 开头的 GitHub Token';
@@ -2033,26 +2044,6 @@ function bindAdmin(){
     renderStatus();
     toast(this.checked ? '抽奖已锁定：参与者暂不能抽奖' : '抽奖已开放：参与者可以抽奖了');
   });
-  el('btnSaveBack').addEventListener('click', function(){
-    var file = el('backFile').files[0];
-    var url = el('backUrl').value.trim();
-    if(file){
-      fileToDataURL(file, 1400, 0.88).then(function(data){
-        state.settings.backUrl = data;
-        saveAll();
-        renderAdminSettings(); renderTicker(); renderGallery();
-        toast('徽章背已更新');
-      }).catch(function(err){ toast('图片处理失败：' + err.message); });
-    }else if(url){
-      state.settings.backUrl = url;
-      saveAll();
-      renderAdminSettings(); renderTicker(); renderGallery();
-      toast('徽章背已更新');
-    }else{
-      toast('请选择徽章背图片文件或填写链接');
-    }
-  });
-
   el('btnExport').addEventListener('click', function(){
     downloadJSON('吧唧抽奖机备份-' + new Date().toISOString().slice(0,10) + '.json', state);
     toast('已导出备份文件');
