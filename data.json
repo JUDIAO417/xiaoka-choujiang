@@ -6,7 +6,7 @@
     "notice": "邮费自理 · 每个账号限抽一次",
     "emptyRate": 0,
     "minWinners": 10,
-    "locked": true
+    "locked": false
   },
   "cards": [
     {
