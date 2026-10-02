@@ -21,7 +21,7 @@
       "id": "c02",
       "name": "休闲时光",
       "weight": 1,
-      "stock": 6,
+      "stock": 5,
       "base": 6,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
     },
@@ -45,7 +45,7 @@
       "id": "c05",
       "name": "啾咪",
       "weight": 1,
-      "stock": 4,
+      "stock": 3,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
     },
@@ -239,6 +239,40 @@
       "test": false,
       "empty": true,
       "cards": []
+    },
+    {
+      "name": "离雨亭砸!",
+      "time": "2026-10-02 22:53",
+      "ts": 1790952798808,
+      "test": false,
+      "empty": false,
+      "cards": [
+        {
+          "id": "c08",
+          "name": "特工",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
+        },
+        {
+          "id": "c02",
+          "name": "休闲时光",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
+        },
+        {
+          "id": "c05",
+          "name": "啾咪",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
+        },
+        {
+          "id": "c04",
+          "name": "主人不要呀~",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
+        }
+      ],
+      "receiver": {
+        "name": "田苗苗",
+        "phone": "15333261504",
+        "addr": "河北省保定市莲池区焦庄乡聂庄暮睿超市"
+      }
     }
   ],
   "_purgeRecords": false
