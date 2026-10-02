@@ -74,34 +74,5 @@
     }
   ],
   "names": [],
-  "records": [
-    {
-      "name": "1433223",
-      "time": "2026-10-02 11:06",
-      "test": true,
-      "empty": false,
-      "cards": [
-        {
-          "id": "c07",
-          "name": "堆雪人",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
-        },
-        {
-          "id": "c05",
-          "name": "啾咪",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
-        },
-        {
-          "id": "c06",
-          "name": "别出声~",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
-        },
-        {
-          "id": "c02",
-          "name": "休闲时光",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
-        }
-      ]
-    }
-  ]
+  "records": []
 }
