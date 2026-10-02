@@ -60,8 +60,8 @@
       "id": "c07",
       "name": "卡面 07",
       "weight": 1,
-      "stock": 1,
-      "base": 3,
+      "stock": 0,
+      "base": 0,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
     },
     {
