@@ -12,8 +12,8 @@
       "id": "c01",
       "name": "卡面 01",
       "weight": 1,
-      "stock": 3,
-      "base": 3,
+      "stock": 1,
+      "base": 1,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
     },
     {
@@ -73,7 +73,10 @@
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
   ],
-  "names": [],
+  "names": [
+    "阿明",
+    "阿花"
+  ],
   "records": [
     {
       "name": "1433223",
