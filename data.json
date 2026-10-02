@@ -4,7 +4,7 @@
     "weightMode": "equal",
     "backUrl": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh",
     "notice": "邮费自理 · 每个账号限抽一次",
-    "emptyRate": 10,
+    "emptyRate": 50,
     "minWinners": 0
   },
   "cards": [
@@ -73,6 +73,21 @@
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
   ],
-  "names": [],
+  "names": [
+    "西湖龙井茶",
+    "慕云栖白茶",
+    "瞳瞳上班中别清我",
+    "惜茶霜",
+    "随~便~菊花茶",
+    "乌叶博主胆子真是肥嘟嘟的",
+    "帮乌叶收保护费的十股东",
+    "蓝木薏米茶",
+    "柠檬冰红茶",
+    "山涧茶",
+    "乌鸢茉莉茶",
+    "离雨亭砸!",
+    "白瑶",
+    "转体"
+  ],
   "records": []
 }
