@@ -740,7 +740,7 @@ var GH_OWNER = 'JUDIAO417';
 var GH_REPO = 'xiaoka-choujiang';
 var GH_PATH = 'badge-data.json';
 var TOKEN_KEY = 'cardDrawGitHubToken';
-var LS_KEY = 'badgeDrawData_v2';
+var LS_KEY = 'badgeDrawData_v3';
 var TEST_NAME = '1433223';
 var DEFAULT_STOCK = 3;
 var BACK_DEFAULT = 'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh';
@@ -952,7 +952,7 @@ function ghSave(){
     .then(function(j){
       if(!j || !j.content || !j.content.sha) throw new Error('同步响应异常');
       syncState.lastSha = j.content.sha;
-      setSync('ok', '数据已同步到云端 data.json');
+      setSync('ok', '数据已同步到云端 badge-data.json');
       saveLocal();
       return true;
     }).catch(function(err){
@@ -2148,7 +2148,7 @@ function init(){
   bindGallery();
   bindAdmin();
   ghLoad().then(function(usedCloud){
-    if(usedCloud) setSync('ok', '数据已同步到云端 data.json');
+    if(usedCloud) setSync('ok', '数据已同步到云端 badge-data.json');
     fullRender();
     if(usedCloud) saveLocal();
     var savedUser = null;
