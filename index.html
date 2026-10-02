@@ -878,7 +878,7 @@ function ghLoad(){
         });
         state = s;
         state.settings = state.settings || defaultState().settings;
-        syncState.lastSha = j.sha;
+        if(j && j.sha) syncState.lastSha = j.sha;
         return true;
       }
       throw new Error('data.json 格式不符');
@@ -901,47 +901,69 @@ function ghSave(){
   setSync('loading', '正在同步到云端…');
   var payload = JSON.stringify(state, null, 2);
   var body = { message: 'update data.json by card draw', content: btoa(unescape(encodeURIComponent(payload))) };
-  if(syncState.lastSha) body.sha = syncState.lastSha;
+  var GH_URL = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH;
+  /* GET 远端当前 sha（未缓存时），带完整状态与结构校验 */
   var ensureSha = syncState.lastSha
     ? Promise.resolve()
-    : fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, { headers: ghHeaders(token) })
-      .then(function(r2){ return r2.json(); })
-      .then(function(j2){ syncState.lastSha = j2.sha; if(j2.sha) body.sha = j2.sha; return true; })
+    : fetch(GH_URL, { headers: ghHeaders(token) })
+      .then(function(r2){
+        if(!r2.ok) throw new Error('HTTP ' + r2.status);
+        return r2.json();
+      })
+      .then(function(j2){ if(j2 && j2.sha) syncState.lastSha = j2.sha; return true; })
       .catch(function(){ return true; });
   return ensureSha.then(function(){
-  return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, {
+  if(syncState.lastSha) body.sha = syncState.lastSha;
+  return fetch(GH_URL, {
     method: 'PUT',
     headers: ghHeaders(token),
     body: JSON.stringify(body)
   }).then(function(res){
     if(res.status === 409){
-      return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, { headers: ghHeaders(token) })
-        .then(function(r2){ return r2.json(); })
-        .then(function(j2){
-          syncState.lastSha = j2.sha;
-          var remote = JSON.parse(decodeURIComponent(escape(atob(j2.content))));
-          mergeRemote(remote);
-          var p2 = JSON.stringify(state, null, 2);
-          return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, {
-            method: 'PUT',
-            headers: ghHeaders(token),
-            body: JSON.stringify({ message: 'update data.json (merge)', content: btoa(unescape(encodeURIComponent(p2))), sha: syncState.lastSha })
-          });
-        });
+      /* 云端已被他人更新：拉取远端、合并本地、重试（最多 2 次，避免极端并发下无限循环） */
+      return retryMerge(token, GH_URL, 2);
     }
     if(!res.ok) throw new Error('HTTP ' + res.status);
     return res.json();
   }).then(function(j){
+    if(!j || !j.content || !j.content.sha) throw new Error('同步响应异常');
     syncState.lastSha = j.content.sha;
     setSync('ok', '数据已同步到云端 data.json');
     saveLocal();
     return true;
   }).catch(function(err){
-    setSync('bad', '云端同步失败，数据已暂存本地（' + err.message + '）');
+    var m = String(err && err.message ? err.message : err);
+    if(/429|403/.test(m)) setSync('bad', '云端同步被限流（GitHub 请求配额已满），数据已暂存本地，请稍后点击「立即同步」重试');
+    else if(/409|11000/.test(m)) setSync('bad', '云端正被多人同时修改，同步未完成，数据已暂存本地，请稍后重试');
+    else setSync('bad', '云端同步失败，数据已暂存本地（' + m + '）');
     saveLocal();
     return false;
   });
   });
+}
+function retryMerge(token, GH_URL, triesLeft){
+  return fetch(GH_URL, { headers: ghHeaders(token) })
+    .then(function(r2){
+      if(!r2.ok) throw new Error('HTTP ' + r2.status);
+      return r2.json();
+    })
+    .then(function(j2){
+      if(!j2 || !j2.content || !j2.sha) throw new Error('远端读取异常');
+      syncState.lastSha = j2.sha;
+      var remote = JSON.parse(decodeURIComponent(escape(atob(j2.content))));
+      mergeRemote(remote);
+      var p2 = JSON.stringify(state, null, 2);
+      return fetch(GH_URL, {
+        method: 'PUT',
+        headers: ghHeaders(token),
+        body: JSON.stringify({ message: 'update data.json (merge)', content: btoa(unescape(encodeURIComponent(p2))), sha: syncState.lastSha })
+      });
+    })
+    .then(function(res2){
+      if(res2.status === 409 && triesLeft > 0) return retryMerge(token, GH_URL, triesLeft - 1);
+      if(!res2.ok) throw new Error('HTTP ' + res2.status);
+      return res2.json();
+    });
 }
 function mergeRemote(remote){
   var remoteMap = {};
