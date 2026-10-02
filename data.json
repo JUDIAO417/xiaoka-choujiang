@@ -4,7 +4,7 @@
     "weightMode": "equal",
     "backUrl": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh",
     "notice": "邮费自理 · 每个账号限抽一次",
-    "emptyRate": 50,
+    "emptyRate": 0,
     "minWinners": 10,
     "locked": true
   },
