@@ -92,34 +92,5 @@
     "人机奶茶",
     "酒桶柑普茶"
   ],
-  "records": [
-    {
-      "name": "1433223",
-      "time": "2026-10-02 11:06",
-      "test": true,
-      "empty": false,
-      "cards": [
-        {
-          "id": "c01",
-          "name": "怎么办呀",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
-        },
-        {
-          "id": "c06",
-          "name": "别出声~",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
-        },
-        {
-          "id": "c05",
-          "name": "啾咪",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
-        },
-        {
-          "id": "c03",
-          "name": "女仆咖啡",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
-        }
-      ]
-    }
-  ]
+  "records": []
 }
