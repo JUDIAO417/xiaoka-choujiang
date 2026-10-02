@@ -21,7 +21,7 @@
       "id": "c02",
       "name": "卡面 02",
       "weight": 1,
-      "stock": 4,
+      "stock": 3,
       "base": 6,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
     },
@@ -37,7 +37,7 @@
       "id": "c04",
       "name": "卡面 04",
       "weight": 1,
-      "stock": 3,
+      "stock": 2,
       "base": 4,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
@@ -45,7 +45,7 @@
       "id": "c05",
       "name": "卡面 05",
       "weight": 1,
-      "stock": 5,
+      "stock": 4,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
     },
@@ -69,7 +69,7 @@
       "id": "c08",
       "name": "卡面 08",
       "weight": 1,
-      "stock": 2,
+      "stock": 1,
       "base": 4,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
@@ -167,6 +167,34 @@
       "test": false,
       "empty": true,
       "cards": []
+    },
+    {
+      "name": "乌叶博主胆子真是肥嘟嘟的",
+      "time": "2026-10-02 11:50",
+      "test": false,
+      "empty": false,
+      "cards": [
+        {
+          "id": "c02",
+          "name": "卡面 02",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
+        },
+        {
+          "id": "c05",
+          "name": "卡面 05",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
+        },
+        {
+          "id": "c04",
+          "name": "卡面 04",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
+        },
+        {
+          "id": "c08",
+          "name": "卡面 08",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
+        }
+      ]
     }
   ]
 }
