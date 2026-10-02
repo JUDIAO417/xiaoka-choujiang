@@ -1681,8 +1681,8 @@ function afterDraw(picks){
   var now = new Date();
   function fmt(n){ return (n < 10 ? '0' : '') + n; }
   var ts = now.getFullYear() + '-' + fmt(now.getMonth()+1) + '-' + fmt(now.getDate()) + ' ' + fmt(now.getHours()) + ':' + fmt(now.getMinutes());
-  if(!isTest && !isEmpty){
-    /* 按 id 实时查找当前卡片扣减（并发 409 合并会重建 state.cards，不能依赖抽奖时的旧引用） */
+  if(!isEmpty){
+    /* 按 id 实时查找当前卡片扣减（并发 409 合并会重建 state.cards，不能依赖抽奖时的旧引用）；测试账号同样消耗库存 */
     picks.forEach(function(c){
       var cur = state.cards.filter(function(x){ return x.id === c.id; })[0];
       if(cur) cur.stock = Math.max(0, (typeof cur.stock === 'number' ? cur.stock : 1) - 1);
@@ -1696,7 +1696,7 @@ function afterDraw(picks){
     cards: picks.map(function(c){ return { id: c.id, name: c.name, img: c.img }; })
   };
   state.records.push(rec);
-  el('whoTag').textContent = isTest ? '测试账号 · 可无限抽奖（不消耗库存）' : '已抽过 · 本名全场限抽一次';
+  el('whoTag').textContent = isTest ? '测试账号 · 可无限抽奖（消耗库存）' : '已抽过 · 本名全场限抽一次';
   renderRecords();
   renderGallery();
   renderStatus();
