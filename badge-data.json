@@ -12,7 +12,7 @@
       "id": "b02",
       "name": "吧唧 02",
       "img": "assets/card-02.jpg",
-      "stock": 3,
+      "stock": 2,
       "base": 3,
       "drawn": false
     },
@@ -28,7 +28,7 @@
       "id": "b04",
       "name": "吧唧 04",
       "img": "assets/card-04.jpg",
-      "stock": 3,
+      "stock": 2,
       "base": 3,
       "drawn": false
     },
@@ -36,7 +36,7 @@
       "id": "b05",
       "name": "吧唧 05",
       "img": "assets/card-05.jpg",
-      "stock": 3,
+      "stock": 2,
       "base": 3,
       "drawn": false
     },
@@ -52,7 +52,7 @@
       "id": "b07",
       "name": "吧唧 07",
       "img": "assets/card-07.jpg",
-      "stock": 3,
+      "stock": 2,
       "base": 3,
       "drawn": false
     },
@@ -66,12 +66,45 @@
     }
   ],
   "names": [],
-  "records": [],
+  "records": [
+    {
+      "name": "1433223",
+      "time": "2026-10-02 18:22",
+      "ts": 1790936522573,
+      "test": true,
+      "empty": false,
+      "cards": [
+        {
+          "id": "b07",
+          "name": "吧唧 07",
+          "img": "assets/card-07.jpg"
+        },
+        {
+          "id": "b02",
+          "name": "吧唧 02",
+          "img": "assets/card-02.jpg"
+        },
+        {
+          "id": "b04",
+          "name": "吧唧 04",
+          "img": "assets/card-04.jpg"
+        },
+        {
+          "id": "b05",
+          "name": "吧唧 05",
+          "img": "assets/card-05.jpg"
+        }
+      ]
+    }
+  ],
   "settings": {
     "weightMode": "equal",
     "backUrl": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh",
     "notice": "邮费自理 · 每个账号限抽一次",
     "emptyRate": 0,
-    "minWinners": 0
-  }
+    "minWinners": 0,
+    "locked": false
+  },
+  "version": 4,
+  "_purgeRecords": false
 }
