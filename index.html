@@ -194,7 +194,6 @@ input,select,textarea{ font-family:inherit; }
   margin-top:4px; padding:6px 0;
 }
 @media (max-width:640px){
-  .slot{ width:118px; }
   .empty-slot{ width:118px; height:210px; }
 }
 .slot-tag{
@@ -442,10 +441,12 @@ input,select,textarea{ font-family:inherit; }
   .wrap{ padding:0 14px; }
   .brand h1{ font-size:18px; }
   .brand .sub{ font-size:12px; }
-  .stage-viewport{ height:330px; border-radius:16px; }
-  .slot{ width:118px; }
-  .slot .card3d{ width:118px; height:210px; }
-  .draw-board{ gap:12px; }
+  .toast-wrap{ top:64px; }
+  .stage-viewport{ min-height:330px; height:auto; border-radius:16px; }
+  .draw-board{ gap:14px 10px; }
+  .slot{ width:calc(50% - 5px); max-width:190px; }
+  .slot .card3d{ width:100%; height:auto; aspect-ratio:605/800; }
+  .empty-slot{ width:100%; height:auto; aspect-ratio:605/800; }
   .ticker{ gap:12px; padding:0 12px; }
   .admin-panel{ padding:18px; }
   .gallery{ grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:12px; }
