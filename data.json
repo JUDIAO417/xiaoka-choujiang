@@ -90,5 +90,13 @@
     "慕云栖白茶",
     "西湖龙井茶"
   ],
-  "records": []
+  "records": [
+    {
+      "name": "西湖龙井茶",
+      "time": "2026-10-02 11:49",
+      "test": false,
+      "empty": true,
+      "cards": []
+    }
+  ]
 }
