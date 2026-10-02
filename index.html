@@ -491,7 +491,7 @@ input,select,textarea{ font-family:inherit; }
   <!-- ============ 舞台（走带 / 抽奖结果） ============ -->
   <section class="stage">
     <div class="stage-head">
-      <div class="stage-title" id="stageTitle">卡池巡览<small>TOUR · 卡面缓缓旋转</small></div>
+      <div class="stage-title" id="stageTitle">卡池巡览</div>
       <div class="stage-tools">
         <button id="btnBackTour" class="btn" type="button" style="display:none">回到巡览</button>
       </div>
@@ -501,7 +501,7 @@ input,select,textarea{ font-family:inherit; }
         <div class="ticker" id="ticker"></div>
       </div>
       <div class="draw-board" id="drawBoard" style="display:none"></div>
-      <div class="hint" id="stageHint">卡片自动巡游 · 卡面缓缓旋转</div>
+      <div class="hint" id="stageHint"></div>
     </div>
   </section>
 
@@ -560,7 +560,6 @@ input,select,textarea{ font-family:inherit; }
       <input id="adminPass" type="password" placeholder="管理员密码" autocomplete="off">
       <button id="btnLogin" class="btn btn-primary" type="button">进入管理</button>
       <div class="login-err" id="loginErr"></div>
-      <div class="login-tip">管理员功能：卡片管理 · 参与者名单 · 抽奖记录 · 数据同步</div>
     </div>
     <div id="adminView" style="display:none">
       <div class="sync-status" id="syncStatus">
@@ -1839,7 +1838,7 @@ function bindStage(){
     el('stageHint').style.display = '';
     el('drawBoard').style.display = 'none';
     el('btnBackTour').style.display = 'none';
-    el('stageTitle').innerHTML = '卡池巡览<small>TOUR · 卡面缓缓旋转</small>';
+    el('stageTitle').innerHTML = '卡池巡览';
     renderStatus();
   });
 }
