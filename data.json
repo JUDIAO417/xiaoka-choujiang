@@ -13,7 +13,7 @@
       "id": "c01",
       "name": "卡面 01",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
     },
@@ -21,7 +21,7 @@
       "id": "c02",
       "name": "卡面 02",
       "weight": 1,
-      "stock": 1,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
     },
@@ -29,7 +29,7 @@
       "id": "c03",
       "name": "卡面 03",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
     },
@@ -37,7 +37,7 @@
       "id": "c04",
       "name": "卡面 04",
       "weight": 1,
-      "stock": 1,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
@@ -45,7 +45,7 @@
       "id": "c05",
       "name": "卡面 05",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
     },
@@ -53,7 +53,7 @@
       "id": "c06",
       "name": "卡面 06",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
     },
@@ -61,7 +61,7 @@
       "id": "c07",
       "name": "卡面 07",
       "weight": 1,
-      "stock": 0,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
     },
@@ -69,7 +69,7 @@
       "id": "c08",
       "name": "卡面 08",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
@@ -90,74 +90,5 @@
     "慕云栖白茶",
     "西湖龙井茶"
   ],
-  "records": [
-    {
-      "name": "西湖龙井茶",
-      "time": "2026-10-02 11:44",
-      "test": false,
-      "empty": false,
-      "cards": [
-        {
-          "id": "c04",
-          "name": "卡面 04",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
-        },
-        {
-          "id": "c05",
-          "name": "卡面 05",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
-        },
-        {
-          "id": "c07",
-          "name": "卡面 07",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
-        },
-        {
-          "id": "c01",
-          "name": "卡面 01",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
-        }
-      ],
-      "receiver": {
-        "name": "1",
-        "phone": "13188100528",
-        "addr": "广东佛山建元下街九号四楼a301"
-      }
-    },
-    {
-      "name": "慕云栖白茶",
-      "time": "2026-10-02 11:45",
-      "test": false,
-      "empty": true,
-      "cards": []
-    },
-    {
-      "name": "瞳瞳上班中别清我",
-      "time": "2026-10-02 11:45",
-      "test": false,
-      "empty": false,
-      "cards": [
-        {
-          "id": "c07",
-          "name": "卡面 07",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
-        },
-        {
-          "id": "c02",
-          "name": "卡面 02",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
-        },
-        {
-          "id": "c08",
-          "name": "卡面 08",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
-        },
-        {
-          "id": "c06",
-          "name": "卡面 06",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
-        }
-      ]
-    }
-  ]
+  "records": []
 }
