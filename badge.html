@@ -145,8 +145,8 @@ input,select,textarea{ font-family:inherit; }
 .ticker-card{ position:relative; flex:none; }
 .ticker-card .card3d{ animation:slowSpin 11s linear infinite; }
 @keyframes slowSpin{
-  from{ transform:rotateY(0deg); }
-  to{ transform:rotateY(360deg); }
+  from{ transform:rotate(0deg); }
+  to{ transform:rotate(360deg); }
 }
 
 /* 吧唧 3D 组件 */
@@ -223,7 +223,7 @@ input,select,textarea{ font-family:inherit; }
   font-size:14px;
 }
 .slot.paused .card3d{ transition:transform .5s cubic-bezier(.22,1,.36,1); }
-.slot.revealed .card3d{ transform:rotateY(180deg); }
+.slot.revealed .card3d{ transform:rotate(0deg); }
 
 /* ============ 抽奖控制区 ============ */
 .draw-control{
@@ -1741,15 +1741,14 @@ function animateSlot(idx, finalCard, pool, done){
     var p = Math.min(1, (t - start) / dur);
     var sp = 0.5 - 0.5 * Math.cos(Math.PI * p);
     var angle = endAngle * sp;
-    c3.style.transform = 'rotateY(' + angle.toFixed(2) + 'deg)';
+    c3.style.transform = 'rotate(' + angle.toFixed(2) + 'deg)';
     if(p >= 1){
       clearInterval(ticker);
       c3.classList.remove('no-trans');
-      c3.style.transform = 'rotateY(' + endAngle + 'deg)';
+      c3.style.transform = 'rotate(' + endAngle + 'deg)';
       slot.classList.add('paused');
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
-          c3.style.transform = 'rotateY(' + (endAngle + 180) + 'deg)';
           frontImg.src = finalCard.img;
           slot.classList.add('revealed');
           var tag = slot.querySelector('.slot-tag');
@@ -1873,7 +1872,8 @@ function bindGallery(){
   el('gallery').addEventListener('click', function(e){
     var g = e.target.closest('.g-card');
     if(!g || g.classList.contains('empty')) return;
-    g.querySelector('.card3d').classList.toggle('flip');
+    var nm = g.querySelector('.name');
+    if(nm) toast('「' + nm.textContent + '」');
   });
 }
 
