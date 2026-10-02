@@ -17,7 +17,7 @@
       "id": "c02",
       "name": "卡面 02",
       "weight": 1,
-      "drawn": false,
+      "drawn": true,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
     },
     {
@@ -31,21 +31,21 @@
       "id": "c04",
       "name": "卡面 04",
       "weight": 1,
-      "drawn": false,
+      "drawn": true,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
     {
       "id": "c05",
       "name": "卡面 05",
       "weight": 1,
-      "drawn": false,
+      "drawn": true,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
     },
     {
       "id": "c06",
       "name": "卡面 06",
       "weight": 1,
-      "drawn": false,
+      "drawn": true,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
     },
     {
@@ -91,6 +91,32 @@
           "id": "c08",
           "name": "卡面 08",
           "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
+        }
+      ]
+    },
+    {
+      "name": "张三",
+      "time": "2026-10-02 09:24",
+      "cards": [
+        {
+          "id": "c02",
+          "name": "卡面 02",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
+        },
+        {
+          "id": "c05",
+          "name": "卡面 05",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
+        },
+        {
+          "id": "c06",
+          "name": "卡面 06",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
+        },
+        {
+          "id": "c04",
+          "name": "卡面 04",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
         }
       ]
     }
