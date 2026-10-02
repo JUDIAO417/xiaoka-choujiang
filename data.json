@@ -4,15 +4,15 @@
     "weightMode": "equal",
     "backUrl": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh",
     "notice": "邮费自理 · 每个账号限抽一次",
-    "emptyRate": 100,
-    "minWinners": 1
+    "emptyRate": 10,
+    "minWinners": 0
   },
   "cards": [
     {
       "id": "c01",
       "name": "卡面 01",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
     },
@@ -36,7 +36,7 @@
       "id": "c04",
       "name": "卡面 04",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
@@ -60,7 +60,7 @@
       "id": "c07",
       "name": "卡面 07",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
     },
@@ -68,55 +68,11 @@
       "id": "c08",
       "name": "卡面 08",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
   ],
-  "names": [
-    "阿明",
-    "阿花"
-  ],
-  "records": [
-    {
-      "name": "阿明",
-      "time": "2026-10-02 10:21",
-      "test": false,
-      "empty": false,
-      "cards": [
-        {
-          "id": "c07",
-          "name": "卡面 07",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
-        },
-        {
-          "id": "c08",
-          "name": "卡面 08",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
-        },
-        {
-          "id": "c01",
-          "name": "卡面 01",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
-        },
-        {
-          "id": "c04",
-          "name": "卡面 04",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
-        }
-      ],
-      "receiver": {
-        "name": "阿明本人",
-        "phone": "13800138000",
-        "addr": "广东省佛山市顺德区某路1号"
-      }
-    },
-    {
-      "name": "阿花",
-      "time": "2026-10-02 10:22",
-      "test": false,
-      "empty": true,
-      "cards": []
-    }
-  ]
+  "names": [],
+  "records": []
 }
