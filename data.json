@@ -12,7 +12,7 @@
       "id": "c01",
       "name": "卡面 01",
       "weight": 1,
-      "stock": 1,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
     },
@@ -20,7 +20,7 @@
       "id": "c02",
       "name": "卡面 02",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
     },
@@ -28,7 +28,7 @@
       "id": "c03",
       "name": "卡面 03",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
     },
@@ -36,7 +36,7 @@
       "id": "c04",
       "name": "卡面 04",
       "weight": 1,
-      "stock": 1,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
@@ -52,7 +52,7 @@
       "id": "c06",
       "name": "卡面 06",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
     },
@@ -68,76 +68,11 @@
       "id": "c08",
       "name": "卡面 08",
       "weight": 1,
-      "stock": 2,
+      "stock": 3,
       "base": 3,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
   ],
-  "names": [
-    "阿明",
-    "阿花"
-  ],
-  "records": [
-    {
-      "name": "阿明",
-      "time": "2026-10-02 10:10",
-      "test": false,
-      "empty": false,
-      "cards": [
-        {
-          "id": "c01",
-          "name": "卡面 01",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
-        },
-        {
-          "id": "c02",
-          "name": "卡面 02",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
-        },
-        {
-          "id": "c08",
-          "name": "卡面 08",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
-        },
-        {
-          "id": "c04",
-          "name": "卡面 04",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
-        }
-      ],
-      "receiver": {
-        "name": "阿明本人",
-        "phone": "13800138000",
-        "addr": "广东省佛山市顺德区某路1号"
-      }
-    },
-    {
-      "name": "阿花",
-      "time": "2026-10-02 10:11",
-      "test": false,
-      "empty": false,
-      "cards": [
-        {
-          "id": "c04",
-          "name": "卡面 04",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
-        },
-        {
-          "id": "c01",
-          "name": "卡面 01",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
-        },
-        {
-          "id": "c06",
-          "name": "卡面 06",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
-        },
-        {
-          "id": "c03",
-          "name": "卡面 03",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
-        }
-      ]
-    }
-  ]
+  "names": [],
+  "records": []
 }
