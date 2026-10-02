@@ -89,34 +89,5 @@
     "白瑶",
     "转体"
   ],
-  "records": [
-    {
-      "name": "1433223",
-      "time": "2026-10-02 11:19",
-      "test": true,
-      "empty": false,
-      "cards": [
-        {
-          "id": "c04",
-          "name": "卡面 04",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
-        },
-        {
-          "id": "c06",
-          "name": "卡面 06",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
-        },
-        {
-          "id": "c05",
-          "name": "卡面 05",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
-        },
-        {
-          "id": "c07",
-          "name": "卡面 07",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
-        }
-      ]
-    }
-  ]
+  "records": []
 }
