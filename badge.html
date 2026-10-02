@@ -1869,12 +1869,8 @@ function bindDrawControl(){
 
 /* ===== 吧唧册 ===== */
 function bindGallery(){
-  el('gallery').addEventListener('click', function(e){
-    var g = e.target.closest('.g-card');
-    if(!g || g.classList.contains('empty')) return;
-    var nm = g.querySelector('.name');
-    if(nm) toast('「' + nm.textContent + '」');
-  });
+  /* 点击吧唧不做任何操作（无弹出、无翻转） */
+  el('gallery').addEventListener('click', function(){ });
 }
 
 /* ===== 管理员 ===== */
