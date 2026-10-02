@@ -1534,17 +1534,15 @@ function startDraw(){
     toast('剩余库存不足 4 张，本场抽奖结束：请管理员补充卡片数量或重置抽奖池');
     return;
   }
-  /* 抽空判定：测试账号必中（方便测试）；普通账号达到保底中奖人数后，按抽空概率可能抽空（4 张全空、不消耗库存） */
+  /* 抽空判定：达到保底中奖人数后，按抽空概率可能抽空（4 张全空、不消耗库存）；测试账号同样参与 */
   var emptyRoll = false;
-  if(!isTestName(currentName)){
-    var minW = parseInt(state.settings.minWinners, 10) || 0;
-    var winners = countWinners();
-    if(minW > 0 && winners < minW){
-      emptyRoll = false;
-    }else{
-      var er = parseInt(state.settings.emptyRate, 10) || 0;
-      if(er > 0 && Math.random() * 100 < er) emptyRoll = true;
-    }
+  var minW = parseInt(state.settings.minWinners, 10) || 0;
+  var winners = countWinners();
+  if(minW > 0 && winners < minW){
+    emptyRoll = false;
+  }else{
+    var er = parseInt(state.settings.emptyRate, 10) || 0;
+    if(er > 0 && Math.random() * 100 < er) emptyRoll = true;
   }
   var picks = [];
   if(!emptyRoll){
