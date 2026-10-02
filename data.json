@@ -29,7 +29,7 @@
       "id": "c03",
       "name": "女仆咖啡",
       "weight": 1,
-      "stock": 4,
+      "stock": 3,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
     },
@@ -53,7 +53,7 @@
       "id": "c06",
       "name": "别出声~",
       "weight": 1,
-      "stock": 3,
+      "stock": 2,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
     },
@@ -61,7 +61,7 @@
       "id": "c07",
       "name": "堆雪人",
       "weight": 1,
-      "stock": 5,
+      "stock": 4,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
     },
@@ -69,7 +69,7 @@
       "id": "c08",
       "name": "特工",
       "weight": 1,
-      "stock": 2,
+      "stock": 1,
       "base": 4,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
@@ -312,6 +312,35 @@
         "phone": "17383074262",
         "addr": "重庆市万州区万州二中实验中学"
       }
+    },
+    {
+      "name": "乌鸢茉莉茶",
+      "time": "2026-10-02 23:00",
+      "ts": 1790953224266,
+      "test": false,
+      "empty": false,
+      "cards": [
+        {
+          "id": "c07",
+          "name": "堆雪人",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
+        },
+        {
+          "id": "c03",
+          "name": "女仆咖啡",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
+        },
+        {
+          "id": "c06",
+          "name": "别出声~",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
+        },
+        {
+          "id": "c08",
+          "name": "特工",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
+        }
+      ]
     }
   ],
   "_purgeRecords": false
