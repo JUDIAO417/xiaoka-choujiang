@@ -491,7 +491,7 @@ input,select,textarea{ font-family:inherit; }
   <!-- ============ 舞台（走带 / 抽奖结果） ============ -->
   <section class="stage">
     <div class="stage-head">
-      <div class="stage-title" id="stageTitle">卡池巡览<small>全部卡组</small></div>
+      <div class="stage-title" id="stageTitle">卡池巡览<small>TOUR · 卡面缓缓旋转</small></div>
       <div class="stage-tools">
         <button id="btnBackTour" class="btn" type="button" style="display:none">回到巡览</button>
       </div>
@@ -501,7 +501,7 @@ input,select,textarea{ font-family:inherit; }
         <div class="ticker" id="ticker"></div>
       </div>
       <div class="draw-board" id="drawBoard" style="display:none"></div>
-      <div class="hint" id="stageHint">卡片巡游</div>
+      <div class="hint" id="stageHint">卡片自动巡游 · 卡面缓缓旋转</div>
     </div>
   </section>
 
@@ -560,7 +560,7 @@ input,select,textarea{ font-family:inherit; }
       <input id="adminPass" type="password" placeholder="管理员密码" autocomplete="off">
       <button id="btnLogin" class="btn btn-primary" type="button">进入管理</button>
       <div class="login-err" id="loginErr"></div>
-      <div class="login-tip">管理员页面</div>
+      <div class="login-tip">管理员功能：卡片管理 · 参与者名单 · 抽奖记录 · 数据同步</div>
     </div>
     <div id="adminView" style="display:none">
       <div class="sync-status" id="syncStatus">
@@ -880,12 +880,14 @@ function ghLoad(){
       var s = JSON.parse(decodeURIComponent(escape(atob(j.content))));
       if(s && Array.isArray(s.cards) && Array.isArray(s.names)){
         migrateState(s);
-        /* 合并 ghLoad 完成前本地已产生的增量（管理员加名、本地新增记录） */
+        /* 合并 ghLoad 完成前本地已产生的增量（管理员加名、本地新增记录）；清除记录后旧的本地记录不复活 */
         var mine = state;
+        var purgedAt = s.settings && s.settings.purgedAt;
         var cloudNames = s.names.slice();
         mine.names.forEach(function(n){ if(cloudNames.indexOf(n) === -1) cloudNames.push(n); });
         s.names = cloudNames;
         mine.records.forEach(function(r){
+          if(purgedAt && (!r.ts || r.ts < purgedAt)) return;
           var dup = s.records.some(function(x){ return x.name === r.name && x.time === r.time; });
           if(!dup) s.records.push(r);
         });
@@ -912,47 +914,51 @@ function ghSave(){
     return Promise.resolve(false);
   }
   setSync('loading', '正在同步到云端…');
-  var payload = JSON.stringify(state, null, 2);
-  var body = { message: 'update data.json by card draw', content: btoa(unescape(encodeURIComponent(payload))) };
   var GH_URL = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH;
-  /* GET 远端当前 sha（未缓存时），带完整状态与结构校验 */
-  var ensureSha = syncState.lastSha
-    ? Promise.resolve()
-    : fetch(GH_URL, { headers: ghHeaders(token) })
-      .then(function(r2){
-        if(!r2.ok) throw new Error('HTTP ' + r2.status);
-        return r2.json();
-      })
-      .then(function(j2){ if(j2 && j2.sha) syncState.lastSha = j2.sha; return true; })
-      .catch(function(){ return true; });
-  return ensureSha.then(function(){
-  if(syncState.lastSha) body.sha = syncState.lastSha;
-  return fetch(GH_URL, {
-    method: 'PUT',
-    headers: ghHeaders(token),
-    body: JSON.stringify(body)
-  }).then(function(res){
-    if(res.status === 409){
-      /* 云端已被他人更新：拉取远端、合并本地、重试（最多 2 次，避免极端并发下无限循环） */
-      return retryMerge(token, GH_URL, 2);
-    }
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
-  }).then(function(j){
-    if(!j || !j.content || !j.content.sha) throw new Error('同步响应异常');
-    syncState.lastSha = j.content.sha;
-    setSync('ok', '数据已同步到云端 data.json');
-    saveLocal();
-    return true;
-  }).catch(function(err){
-    var m = String(err && err.message ? err.message : err);
-    if(/429|403/.test(m)) setSync('bad', '云端同步被限流（GitHub 请求配额已满），数据已暂存本地，请稍后点击「立即同步」重试');
-    else if(/409|11000/.test(m)) setSync('bad', '云端正被多人同时修改，同步未完成，数据已暂存本地，请稍后重试');
-    else setSync('bad', '云端同步失败，数据已暂存本地（' + m + '）');
-    saveLocal();
-    return false;
-  });
-  });
+  var purge = !!state._purgeRecords;
+  state._purgeRecords = false;
+  /* 合并优先：每次保存前先拉取云端最新数据，合并后再上传——避免异地多人并发时后保存的一方覆盖掉他人记录 */
+  return fetch(GH_URL, { headers: ghHeaders(token) })
+    .then(function(r2){
+      if(!r2.ok) throw new Error('HTTP ' + r2.status);
+      return r2.json();
+    })
+    .then(function(j2){
+      var remote = JSON.parse(decodeURIComponent(escape(atob(j2.content))));
+      if(!j2.sha) throw new Error('远端读取异常');
+      if(!remote || !Array.isArray(remote.cards) || !Array.isArray(remote.names)) throw new Error('远端数据格式不符');
+      if(purge) remote.records = [];
+      syncState.lastSha = j2.sha;
+      mergeRemote(remote);
+      var payload = JSON.stringify(state, null, 2);
+      return fetch(GH_URL, {
+        method: 'PUT',
+        headers: ghHeaders(token),
+        body: JSON.stringify({ message: 'update data.json (merge-first)', content: btoa(unescape(encodeURIComponent(payload))), sha: j2.sha })
+      });
+    })
+    .then(function(res){
+      if(res.status === 409){
+        /* 云端已被他人更新：拉取远端、合并本地、重试（最多 2 次，避免极端并发下无限循环） */
+        return retryMerge(token, GH_URL, 2);
+      }
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(j){
+      if(!j || !j.content || !j.content.sha) throw new Error('同步响应异常');
+      syncState.lastSha = j.content.sha;
+      setSync('ok', '数据已同步到云端 data.json');
+      saveLocal();
+      return true;
+    }).catch(function(err){
+      var m = String(err && err.message ? err.message : err);
+      if(/429|403/.test(m)) setSync('bad', '云端同步被限流（GitHub 请求配额已满），数据已暂存本地，请稍后点击「立即同步」重试');
+      else if(/409|11000/.test(m)) setSync('bad', '云端正被多人同时修改，同步未完成，数据已暂存本地，请稍后重试');
+      else setSync('bad', '云端同步失败，数据已暂存本地（' + m + '）');
+      saveLocal();
+      return false;
+    });
 }
 function retryMerge(token, GH_URL, triesLeft){
   return fetch(GH_URL, { headers: ghHeaders(token) })
@@ -999,6 +1005,7 @@ function mergeRemote(remote){
   var localMap = {};
   state.records.forEach(function(r){ localMap[r.name + '|' + r.time] = r; });
   var mineRecords = state.records.slice();
+  var purgedAt = state.settings && state.settings.purgedAt;
   var seen = {};
   state.records = [];
   remote.records.forEach(function(r){
@@ -1008,6 +1015,7 @@ function mergeRemote(remote){
     seen[r.name + r.time] = true;
   });
   mineRecords.forEach(function(r){
+    if(purgedAt && (!r.ts || r.ts < purgedAt)) return;
     if(!seen[r.name + r.time]){
       state.records.push(r);
       seen[r.name + r.time] = true;
@@ -1773,6 +1781,7 @@ function afterDraw(picks){
   var rec = {
     name: currentName,
     time: ts,
+    ts: Date.now(),
     test: !!isTest,
     empty: !!isEmpty,
     cards: picks.map(function(c){ return { id: c.id, name: c.name, img: c.img }; })
@@ -1830,7 +1839,7 @@ function bindStage(){
     el('stageHint').style.display = '';
     el('drawBoard').style.display = 'none';
     el('btnBackTour').style.display = 'none';
-    el('stageTitle').innerHTML = '卡池巡览<small>全部卡组</small>';
+    el('stageTitle').innerHTML = '卡池巡览<small>TOUR · 卡面缓缓旋转</small>';
     renderStatus();
   });
 }
@@ -2102,6 +2111,8 @@ function bindAdmin(){
   el('btnClearRecords').addEventListener('click', function(){
     confirmDialog('一键清除抽奖记录', '将清空全部抽奖记录并恢复所有卡片库存（名单与卡片保持不变，所有人都可重新抽奖），是否继续？').then(function(ok){
       if(!ok) return;
+      state._purgeRecords = true;
+      state.settings.purgedAt = Date.now();
       state.records = [];
       state.cards.forEach(function(c){
         c.stock = (typeof c.base === 'number' ? c.base : (typeof c.stock === 'number' ? c.stock : 1));
