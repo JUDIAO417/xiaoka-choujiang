@@ -103,7 +103,12 @@
           "name": "卡面 02",
           "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
         }
-      ]
+      ],
+      "receiver": {
+        "name": "阿明本人",
+        "phone": "13800138000",
+        "addr": "广东省佛山市顺德区某路1号"
+      }
     }
   ]
 }
