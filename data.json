@@ -71,7 +71,9 @@
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
   ],
-  "names": [],
+  "names": [
+    "张三"
+  ],
   "records": [
     {
       "name": "1433223",
