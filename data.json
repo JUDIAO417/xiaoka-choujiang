@@ -76,5 +76,13 @@
   "names": [
     "阿明"
   ],
-  "records": []
+  "records": [
+    {
+      "name": "阿明",
+      "time": "2026-10-02 10:16",
+      "test": false,
+      "empty": true,
+      "cards": []
+    }
+  ]
 }
