@@ -340,7 +340,12 @@
           "name": "特工",
           "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
         }
-      ]
+      ],
+      "receiver": {
+        "name": "R",
+        "phone": "15340589919",
+        "addr": "重庆市永川区中山路街道盛世唐城小当家"
+      }
     }
   ],
   "_purgeRecords": false
