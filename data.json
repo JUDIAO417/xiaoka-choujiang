@@ -24,14 +24,14 @@
       "id": "c03",
       "name": "卡面 03",
       "weight": 1,
-      "drawn": true,
+      "drawn": false,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
     },
     {
       "id": "c04",
       "name": "卡面 04",
       "weight": 1,
-      "drawn": true,
+      "drawn": false,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
     {
@@ -52,14 +52,14 @@
       "id": "c07",
       "name": "卡面 07",
       "weight": 1,
-      "drawn": true,
+      "drawn": false,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
     },
     {
       "id": "c08",
       "name": "卡面 08",
       "weight": 1,
-      "drawn": true,
+      "drawn": false,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
   ],
@@ -67,32 +67,5 @@
     "张三",
     "李四"
   ],
-  "records": [
-    {
-      "name": "张三",
-      "time": "2026-10-02 09:25",
-      "cards": [
-        {
-          "id": "c03",
-          "name": "卡面 03",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
-        },
-        {
-          "id": "c08",
-          "name": "卡面 08",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
-        },
-        {
-          "id": "c07",
-          "name": "卡面 07",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
-        },
-        {
-          "id": "c04",
-          "name": "卡面 04",
-          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
-        }
-      ]
-    }
-  ]
+  "records": []
 }
