@@ -188,7 +188,12 @@
           "name": "别出声~",
           "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
         }
-      ]
+      ],
+      "receiver": {
+        "name": "柠檬冰红茶",
+        "phone": "19550876086",
+        "addr": "山东省泰安市上高街区温泉路960号山东农业大学南校区西北片区"
+      }
     },
     {
       "name": "慕云栖白茶",
