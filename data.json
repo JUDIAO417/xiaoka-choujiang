@@ -13,7 +13,7 @@
       "id": "c01",
       "name": "怎么办呀",
       "weight": 1,
-      "stock": 5,
+      "stock": 4,
       "base": 6,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
     },
@@ -29,7 +29,7 @@
       "id": "c03",
       "name": "女仆咖啡",
       "weight": 1,
-      "stock": 3,
+      "stock": 2,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
     },
@@ -37,7 +37,7 @@
       "id": "c04",
       "name": "主人不要呀~",
       "weight": 1,
-      "stock": 3,
+      "stock": 2,
       "base": 4,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
@@ -45,7 +45,7 @@
       "id": "c05",
       "name": "啾咪",
       "weight": 1,
-      "stock": 3,
+      "stock": 2,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
     },
@@ -346,6 +346,35 @@
         "phone": "15340589919",
         "addr": "重庆市永川区中山路街道盛世唐城小当家"
       }
+    },
+    {
+      "name": "酒桶柑普茶",
+      "time": "2026-10-02 23:04",
+      "ts": 1790953443641,
+      "test": false,
+      "empty": false,
+      "cards": [
+        {
+          "id": "c03",
+          "name": "女仆咖啡",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
+        },
+        {
+          "id": "c05",
+          "name": "啾咪",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh"
+        },
+        {
+          "id": "c01",
+          "name": "怎么办呀",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
+        },
+        {
+          "id": "c04",
+          "name": "主人不要呀~",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
+        }
+      ]
     }
   ],
   "_purgeRecords": false
