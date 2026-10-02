@@ -117,7 +117,12 @@
           "name": "卡面 01",
           "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
         }
-      ]
+      ],
+      "receiver": {
+        "name": "1",
+        "phone": "13188100528",
+        "addr": "广东佛山建元下街九号四楼a301"
+      }
     }
   ]
 }
