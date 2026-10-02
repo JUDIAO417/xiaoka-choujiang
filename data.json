@@ -53,7 +53,7 @@
       "id": "c06",
       "name": "卡面 06",
       "weight": 1,
-      "stock": 1,
+      "stock": 0,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
     },
@@ -61,7 +61,7 @@
       "id": "c07",
       "name": "卡面 07",
       "weight": 1,
-      "stock": 3,
+      "stock": 0,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
     },
@@ -368,6 +368,34 @@
           "id": "c06",
           "name": "卡面 06",
           "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
+        }
+      ]
+    },
+    {
+      "name": "转体",
+      "time": "2026-10-02 11:59",
+      "test": false,
+      "empty": false,
+      "cards": [
+        {
+          "id": "c06",
+          "name": "卡面 06",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
+        },
+        {
+          "id": "c07",
+          "name": "卡面 07",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
+        },
+        {
+          "id": "c07",
+          "name": "卡面 07",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
+        },
+        {
+          "id": "c07",
+          "name": "卡面 07",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh"
         }
       ]
     }
