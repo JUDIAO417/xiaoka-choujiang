@@ -13,7 +13,7 @@
       "id": "c01",
       "name": "卡面 01",
       "weight": 1,
-      "stock": 6,
+      "stock": 5,
       "base": 6,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
     },
@@ -21,7 +21,7 @@
       "id": "c02",
       "name": "卡面 02",
       "weight": 1,
-      "stock": 6,
+      "stock": 5,
       "base": 6,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
     },
@@ -37,7 +37,7 @@
       "id": "c04",
       "name": "卡面 04",
       "weight": 1,
-      "stock": 4,
+      "stock": 3,
       "base": 4,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
@@ -69,7 +69,7 @@
       "id": "c08",
       "name": "卡面 08",
       "weight": 1,
-      "stock": 4,
+      "stock": 3,
       "base": 4,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
@@ -97,6 +97,34 @@
       "test": false,
       "empty": true,
       "cards": []
+    },
+    {
+      "name": "慕云栖白茶",
+      "time": "2026-10-02 11:49",
+      "test": false,
+      "empty": false,
+      "cards": [
+        {
+          "id": "c04",
+          "name": "卡面 04",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
+        },
+        {
+          "id": "c08",
+          "name": "卡面 08",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
+        },
+        {
+          "id": "c01",
+          "name": "卡面 01",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
+        },
+        {
+          "id": "c02",
+          "name": "卡面 02",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh"
+        }
+      ]
     }
   ]
 }
