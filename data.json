@@ -1,9 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "settings": {
     "weightMode": "equal",
     "backUrl": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh",
-    "notice": "邮费自理 · 每个账号限抽一次 · 中奖请截图兑奖"
+    "notice": "邮费自理 · 每个账号限抽一次 · 中奖请截图兑奖",
+    "emptyRate": 10,
+    "minWinners": 0
   },
   "cards": [
     {
@@ -71,6 +73,8 @@
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
   ],
-  "names": [],
+  "names": [
+    "阿明"
+  ],
   "records": []
 }
