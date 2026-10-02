@@ -282,7 +282,7 @@ input,select,textarea{ font-family:inherit; }
 
 /* ============ 管理员面板 ============ */
 .admin-mask{
-  position:fixed; inset:0; z-index:100; display:none;
+  position:fixed; inset:0; z-index:140; display:none;
   align-items:center; justify-content:center; padding:20px;
   background:rgba(9,7,24,.86);
 }
@@ -632,6 +632,7 @@ input,select,textarea{ font-family:inherit; }
     <input id="gateName" type="text" placeholder="输入你的名字" autocomplete="off">
     <button id="btnGateEnter" class="btn btn-primary" type="button">进入抽奖</button>
     <div class="gate-msg" id="gateMsg"></div>
+    <button class="btn btn-ghost" id="btnGateAdmin" type="button" style="width:100%;margin-top:10px;font-size:13px">管理员入口</button>
   </div>
 </div>
 
@@ -807,6 +808,13 @@ function ghSave(){
   var payload = JSON.stringify(state, null, 2);
   var body = { message: 'update data.json by card draw', content: btoa(unescape(encodeURIComponent(payload))) };
   if(syncState.lastSha) body.sha = syncState.lastSha;
+  var ensureSha = syncState.lastSha
+    ? Promise.resolve()
+    : fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, { headers: ghHeaders(token) })
+      .then(function(r2){ return r2.json(); })
+      .then(function(j2){ syncState.lastSha = j2.sha; if(j2.sha) body.sha = j2.sha; return true; })
+      .catch(function(){ return true; });
+  return ensureSha.then(function(){
   return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, {
     method: 'PUT',
     headers: ghHeaders(token),
@@ -838,6 +846,7 @@ function ghSave(){
     setSync('bad', '云端同步失败，数据已暂存本地（' + err.message + '）');
     saveLocal();
     return false;
+  });
   });
 }
 function mergeRemote(remote){
@@ -915,12 +924,18 @@ function renderStatus(){
   var pool = availableCards();
   var doneCount = state.records.length;
   var leftNames = state.names.length - doneCount;
+  var userDrawn = currentName && state.records.some(function(r){ return r.name === currentName; });
   el('statusNote').textContent = '奖池剩余 ' + pool.length + ' 张卡片 · 每次抽出 4 张（不重复，抽完为止）';
   el('statusPill').textContent = '参与者 ' + state.names.length + ' 人 · 已抽 ' + doneCount + ' 人 · 未抽 ' + Math.max(0, leftNames) + ' 人';
-  el('btnDraw').disabled = (pool.length < 4) || !currentName || isDrawing;
-  if(!currentName) el('btnDraw').textContent = '开始抽奖';
-  else if(pool.length < 4) el('btnDraw').textContent = '奖池不足 4 张';
-  else el('btnDraw').textContent = '开始抽奖';
+  if(userDrawn){
+    el('btnDraw').disabled = true;
+    el('btnDraw').textContent = '本名已抽过';
+  }else{
+    el('btnDraw').disabled = (pool.length < 4) || !currentName || isDrawing;
+    if(!currentName) el('btnDraw').textContent = '开始抽奖';
+    else if(pool.length < 4) el('btnDraw').textContent = '奖池不足 4 张';
+    else el('btnDraw').textContent = '开始抽奖';
+  }
 }
 function availableCards(){
   return state.cards.filter(function(c){ return !c.drawn; });
@@ -1173,6 +1188,15 @@ function openGate(){
   setTimeout(function(){ el('gateName').focus(); }, 100);
 }
 function closeGate(){ el('gateMask').classList.add('hide'); }
+function bindGate(){
+  el('btnGateEnter').addEventListener('click', enterByGate);
+  el('gateName').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') enterByGate();
+  });
+  el('btnGateAdmin').addEventListener('click', function(){
+    openAdmin();
+  });
+}
 function enterByGate(){
   var name = el('gateName').value.trim();
   if(!name){ setGateMsg('请输入你的名字', 'err'); return; }
@@ -1243,6 +1267,11 @@ function showUserResult(rec){
 function startDraw(){
   if(isDrawing) return;
   if(!currentName){ openGate(); return; }
+  if(state.records.some(function(r){ return r.name === currentName; })){
+    toast('「' + currentName + '」已抽过奖，本名全场限抽一次');
+    showUserResult(currentName);
+    return;
+  }
   var pool = availableCards();
   if(pool.length < 4){ toast('奖池剩余卡片不足 4 张，请联系管理员补充或重置抽奖池'); return; }
   var picks = [];
@@ -1628,6 +1657,7 @@ function init(){
   state = loadLocal() || defaultState();
   try{ adminLogged = sessionStorage.getItem('cardDrawAdmin') === '1'; }catch(e){ adminLogged = false; }
   el('noticeText').textContent = state.settings.notice || DEFAULT_NOTICE;
+  bindGate();
   bindStage();
   bindDrawControl();
   bindGallery();
