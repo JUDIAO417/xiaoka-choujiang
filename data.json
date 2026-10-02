@@ -13,7 +13,7 @@
       "id": "c01",
       "name": "怎么办呀",
       "weight": 1,
-      "stock": 6,
+      "stock": 5,
       "base": 6,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
     },
@@ -37,7 +37,7 @@
       "id": "c04",
       "name": "主人不要呀~",
       "weight": 1,
-      "stock": 4,
+      "stock": 3,
       "base": 4,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
     },
@@ -53,7 +53,7 @@
       "id": "c06",
       "name": "别出声~",
       "weight": 1,
-      "stock": 4,
+      "stock": 3,
       "base": 5,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
     },
@@ -69,7 +69,7 @@
       "id": "c08",
       "name": "特工",
       "weight": 1,
-      "stock": 3,
+      "stock": 2,
       "base": 4,
       "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
     }
@@ -197,6 +197,35 @@
       "test": false,
       "empty": true,
       "cards": []
+    },
+    {
+      "name": "随~便~菊花茶",
+      "time": "2026-10-02 22:53",
+      "ts": 1790952832535,
+      "test": false,
+      "empty": false,
+      "cards": [
+        {
+          "id": "c04",
+          "name": "主人不要呀~",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb"
+        },
+        {
+          "id": "c08",
+          "name": "特工",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g"
+        },
+        {
+          "id": "c06",
+          "name": "别出声~",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc"
+        },
+        {
+          "id": "c01",
+          "name": "怎么办呀",
+          "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc"
+        }
+      ]
     }
   ],
   "_purgeRecords": false
