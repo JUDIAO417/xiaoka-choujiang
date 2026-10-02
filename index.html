@@ -636,7 +636,7 @@ input,select,textarea{ font-family:inherit; }
           <input type="number" id="minWinnersInput" min="0" step="1">
           <span class="label-small" style="align-self:center">设为 0 表示不启用保底</span>
         </div>
-        <div class="form-hint" id="winStatsHint">保底机制：已中奖人数未达到保底人数前，每次抽奖必中；达到后按上方抽空概率可能抽空。系统会自动调整，保证至少设定的人数中奖（需库存足够：保底人数 × 4 ≤ 总库存）。</div>
+        <div class="form-hint" id="winStatsHint">保底机制：已中奖人数未达到保底人数前，每次抽奖必中；达到后按上方抽空概率可能抽空。系统会自动调整，保证至少设定的人数中奖（需库存足够：保底人数 × 4 ≤ 总库存）。抽空概率设为 100% 时必定抽空（优先于保底）。</div>
         <div class="form-hint" id="winStatsLine" style="color:var(--gold);font-size:13px"></div>
       </div>
       <div class="adm-section" id="tab-data">
@@ -1538,11 +1538,17 @@ function startDraw(){
   var emptyRoll = false;
   var minW = parseInt(state.settings.minWinners, 10) || 0;
   var winners = countWinners();
-  if(minW > 0 && winners < minW){
-    emptyRoll = false;
-  }else{
-    var er = parseInt(state.settings.emptyRate, 10) || 0;
-    if(er > 0 && Math.random() * 100 < er) emptyRoll = true;
+  var er = parseInt(state.settings.emptyRate, 10) || 0;
+  if(er >= 100){
+    /* 抽空概率 100%：必定抽空（管理员明确设置为 100% 时优先于保底，真正全员可空） */
+    emptyRoll = true;
+  }else if(er > 0){
+    if(minW > 0 && winners < minW){
+      /* 保底未达标：暂不抽空，保证达到保底人数 */
+      emptyRoll = false;
+    }else if(Math.random() * 100 < er){
+      emptyRoll = true;
+    }
   }
   var picks = [];
   if(!emptyRoll){
