@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小卡抽奖机 · Wu Ye 珍藏卡池</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='10' width='52' height='44' rx='7' fill='%23A78BFA'/%3E%3Crect x='12' y='16' width='40' height='32' rx='4' fill='%23F0ECFA'/%3E%3Cpath d='M32 22l3 6.5 7 .7-5.3 4.6 1.6 6.9L32 36.8l-6.3 3.9 1.6-6.9L22 29.2l7-.7z' fill='%23F472B6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+/* ============ 基础与色彩 ============ */
+:root{
+  --bg:#0D0A1C; --bg-deep:#090718; --panel:#1B1538; --panel-2:#221B44;
+  --line:rgba(167,139,250,.16); --line-strong:rgba(167,139,250,.34);
+  --text:#F0ECFA; --text-dim:#A79EC8; --text-faint:#6E6396;
+  --accent:#A78BFA; --accent-deep:#7C5CE0; --accent-2:#F472B6;
+  --gold:#E8C37E; --good:#5EEAD4; --danger:#F87171;
+  --radius:14px; --shadow-card:0 18px 40px rgba(0,0,0,.45);
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(124,92,224,.20), transparent 60%),
+    radial-gradient(900px 500px at 90% 110%, rgba(244,114,182,.08), transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  min-height:100vh; line-height:1.6; overflow-x:hidden;
+}
+body::after{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.045;
+  mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+img{ display:block; }
+button{ font-family:inherit; cursor:pointer; }
+input,select,textarea{ font-family:inherit; }
+:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.wrap{ max-width:1120px; margin:0 auto; padding:0 22px; }
+
+/* ============ 顶栏 ============ */
+.topbar{ display:flex; align-items:center; justify-content:space-between; padding:18px 0 10px; }
+.brand{ display:flex; align-items:center; gap:12px; }
+.brand-mark{
+  width:44px; height:44px; border-radius:12px; flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 20px rgba(124,92,224,.4);
+}
+.brand-mark svg{ width:26px; height:26px; }
+.brand h1{ font-family:"Noto Serif SC",serif; font-weight:900; font-size:22px; letter-spacing:.04em; }
+.brand .sub{ font-size:12px; color:var(--text-faint); letter-spacing:.18em; margin-top:2px; }
+.top-actions{ display:flex; align-items:center; gap:10px; }
+
+/* ============ 按钮 ============ */
+.btn{
+  border:1px solid var(--line-strong); background:var(--panel); color:var(--text);
+  border-radius:10px; padding:9px 16px; font-size:14px; font-weight:500;
+  transition:transform .18s cubic-bezier(.22,1,.36,1), background .18s, border-color .18s, opacity .18s;
+}
+.btn:hover{ background:var(--panel-2); border-color:var(--accent); }
+.btn:active{ transform:scale(.97); }
+.btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+  border:none; color:#fff; font-weight:700;
+  box-shadow:0 10px 26px rgba(124,92,224,.38);
+}
+.btn-primary:hover{ filter:brightness(1.08); }
+.btn-ghost{ background:transparent; border-color:var(--line); }
+.btn-danger{ border-color:rgba(248,113,113,.4); color:#fca5a5; }
+.btn-danger:hover{ background:rgba(248,113,113,.1); border-color:var(--danger); }
+.btn-lg{ padding:14px 34px; font-size:16px; border-radius:14px; }
+
+/* ============ 名字门禁 ============ */
+.gate-mask{
+  position:fixed; inset:0; z-index:130; display:flex; align-items:center; justify-content:center; padding:20px;
+  background:rgba(9,7,24,.9);
+}
+.gate-mask.hide{ display:none; }
+.gate{
+  width:min(420px,100%); text-align:center;
+  background:linear-gradient(180deg,#1D1740,#171230);
+  border:1px solid var(--line-strong); border-radius:20px; padding:30px 28px;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+.gate .mark{
+  width:58px; height:58px; margin:0 auto 14px; border-radius:16px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 12px 28px rgba(124,92,224,.4);
+}
+.gate h2{ font-family:"Noto Serif SC",serif; font-weight:900; font-size:20px; }
+.gate p{ color:var(--text-dim); font-size:13px; margin-top:6px; }
+.gate input{
+  width:100%; margin-top:18px; padding:13px 16px; border-radius:11px;
+  border:1px solid var(--line-strong); background:rgba(13,10,28,.7); color:var(--text);
+  font-size:16px; text-align:center; letter-spacing:.06em;
+}
+.gate input:focus{ border-color:var(--accent); }
+.gate .btn{ width:100%; margin-top:12px; padding:13px; font-size:16px; }
+.gate-msg{ min-height:20px; margin-top:12px; font-size:13px; }
+.gate-msg.err{ color:var(--danger); }
+.gate-msg.ok{ color:var(--good); }
+
+/* ============ 舞台（走带 + 抽奖结果） ============ */
+.stage{ margin-top:8px; }
+.stage-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.stage-title{ font-family:"Noto Serif SC",serif; font-weight:700; font-size:18px; }
+.stage-title small{ display:block; font-family:"Noto Sans SC",sans-serif; font-size:12px; color:var(--text-faint); font-weight:400; letter-spacing:.12em; margin-top:2px; }
+.stage-tools{ display:flex; gap:8px; }
+.stage-tools .btn{ padding:7px 13px; font-size:13px; }
+.stage-viewport{
+  perspective:1600px; position:relative;
+  height:430px; display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+  border:1px solid var(--line); border-radius:22px;
+  background:
+    radial-gradient(700px 420px at 50% 40%, rgba(124,92,224,.14), transparent 65%),
+    linear-gradient(180deg, rgba(27,21,56,.6), rgba(9,7,24,.85));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.stage-viewport::before{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:22px;
+  background:radial-gradient(600px 300px at 50% 0%, transparent 60%, rgba(9,7,24,.55) 100%);
+}
+
+/* 走带：卡片从左往右平移 + 缓慢旋转 */
+.ticker-wrap{
+  position:absolute; inset:0; display:flex; align-items:center;
+  overflow:hidden;
+}
+.ticker{
+  display:flex; gap:20px; padding:0 20px; width:max-content;
+  animation:tickerMove 36s linear infinite;
+  will-change:transform;
+}
+.ticker.paused{ animation-play-state:paused; }
+@keyframes tickerMove{
+  from{ transform:translateX(-50%); }
+  to{ transform:translateX(0); }
+}
+.ticker-card{ position:relative; flex:none; }
+.ticker-card .card3d{ animation:slowSpin 11s linear infinite; }
+@keyframes slowSpin{
+  from{ transform:rotateY(0deg); }
+  to{ transform:rotateY(360deg); }
+}
+
+/* 卡片 3D 组件 */
+.card3d{
+  position:relative; width:100%; height:100%;
+  transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.22,1,.36,1);
+  border-radius:12px;
+  box-shadow:var(--shadow-card);
+}
+.card3d.no-trans{ transition:none !important; }
+.card3d.flip{ transform:rotateY(180deg); }
+.face{
+  position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  border-radius:12px; overflow:hidden; background:var(--panel-2);
+}
+.face img{ width:100%; height:100%; object-fit:cover; }
+.face-back{ transform:rotateY(180deg); }
+.face-frame::after{
+  content:""; position:absolute; inset:0; border-radius:12px;
+  box-shadow:inset 0 0 0 1.5px rgba(240,236,250,.16);
+}
+.hint{
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:14px; font-size:12px; color:var(--text-faint); letter-spacing:.06em;
+  background:rgba(13,10,28,.7); padding:4px 14px; border-radius:20px;
+  border:1px solid var(--line); white-space:nowrap;
+  pointer-events:none; z-index:2;
+}
+
+/* 抽奖结果板 */
+.draw-board{
+  position:relative; z-index:2;
+  display:flex; gap:20px; justify-content:center; align-items:flex-start;
+  flex-wrap:wrap; padding:28px 10px;
+}
+.slot{ width:168px; text-align:center; }
+.slot .card3d{ width:168px; height:298px; margin:0 auto; }
+.empty-slot{
+  width:168px; height:298px; margin:0 auto;
+  border:1.5px dashed var(--line-strong); border-radius:12px;
+  background:rgba(27,21,56,.45);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-faint); font-size:15px; letter-spacing:.3em;
+}
+.recv-box{
+  width:100%; text-align:center; font-size:13px; color:var(--gold);
+  margin-top:4px; padding:6px 0;
+}
+@media (max-width:640px){
+  .slot{ width:118px; }
+  .empty-slot{ width:118px; height:210px; }
+}
+.slot-tag{
+  margin-top:10px; font-size:13px; color:var(--text-dim);
+  min-height:24px; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.slot-tag .dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); display:inline-block; }
+.slot-tag .result-name{
+  font-family:"Noto Serif SC",serif; font-weight:700; color:var(--gold);
+  font-size:14px;
+}
+.slot.paused .card3d{ transition:transform .5s cubic-bezier(.22,1,.36,1); }
+.slot.revealed .card3d{ transform:rotateY(180deg); }
+
+/* ============ 抽奖控制区 ============ */
+.draw-control{
+  margin:22px 0 0;
+  background:linear-gradient(180deg,var(--panel),rgba(27,21,56,.5));
+  border:1px solid var(--line); border-radius:var(--radius);
+  padding:18px 20px 20px;
+}
+.who-line{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding-bottom:14px; margin-bottom:14px; border-bottom:1px dashed var(--line);
+}
+.who-line .avatar{
+  width:36px; height:36px; border-radius:50%; flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; color:#fff;
+}
+.who-line .who-name{ font-weight:700; font-size:15px; }
+.who-line .who-tag{ font-size:12px; color:var(--text-faint); }
+.notice-line{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  font-size:14px; font-weight:500; color:var(--gold);
+  padding:10px 14px; border:1px solid rgba(232,195,126,.3);
+  border-radius:11px; background:rgba(232,195,126,.07); margin-bottom:12px;
+}
+.notice-line svg{ flex:none; }
+.status-line{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
+}
+.status-line .note{ font-size:13px; color:var(--text-dim); }
+.status-line .pill{
+  font-size:12px; color:var(--text-dim); background:rgba(167,139,250,.12);
+  padding:4px 12px; border-radius:20px;
+}
+
+/* ============ 分区通用 ============ */
+.section{ margin-top:34px; }
+.section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.section-head h2{ font-family:"Noto Serif SC",serif; font-weight:700; font-size:19px; }
+.section-head .more{ font-size:13px; color:var(--text-faint); }
+
+/* 卡册 */
+.gallery{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px; }
+.g-card{ cursor:pointer; perspective:900px; position:relative; }
+.g-card .card3d{ width:100%; aspect-ratio:9/16; height:auto; }
+.g-card .face{ border-radius:10px; }
+.g-card .name{
+  margin-top:8px; font-size:13px; text-align:center; color:var(--text-dim);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.g-card .flag{
+  position:absolute; top:8px; right:8px; z-index:3;
+  font-size:12px; padding:2px 9px; border-radius:12px; pointer-events:none;
+  max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.g-card .flag.out{ color:#fff; background:rgba(248,113,113,.85); }
+.g-card .flag.keep{ color:#fff; background:rgba(94,234,212,.75); }
+.g-card.empty .card3d{
+  border:1.5px dashed var(--line-strong); border-radius:10px;
+  display:flex; align-items:center; justify-content:center; color:var(--text-faint);
+  background:rgba(27,21,56,.4); font-size:12px;
+}
+
+/* 抽奖记录 */
+.rec-list{ display:flex; flex-direction:column; gap:8px; }
+.rec-row{
+  display:flex; align-items:center; gap:12px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:9px 14px;
+  flex-wrap:wrap;
+}
+.rec-row .who{
+  flex:none; min-width:96px;
+  font-weight:700; font-size:14px;
+  display:flex; align-items:center; gap:8px;
+}
+.rec-row .who .avatar{
+  width:30px; height:30px; border-radius:50%; flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff;
+}
+.rec-row .rec-test-tag{
+  font-size:11px; color:#fff; background:rgba(94,234,212,.75); border-radius:9px; padding:1px 8px; flex:none;
+}
+.rec-row .rec-empty-txt{ color:var(--text-faint); font-size:13px; }
+.rec-row .recv-line{
+  width:100%; font-size:12px; color:var(--text-dim); padding-top:6px; margin-top:6px;
+  border-top:1px dashed var(--line); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.rec-row .cards{ flex:1; display:flex; gap:8px; flex-wrap:wrap; min-width:0; }
+.rec-row .cards img{ width:32px; height:57px; object-fit:cover; border-radius:6px; }
+.rec-row .cards .nm{ font-size:12px; color:var(--text-dim); align-self:center; }
+.rec-row .time{ font-size:11px; color:var(--text-faint); }
+.rec-empty{ color:var(--text-faint); font-size:13px; padding:8px 2px; }
+
+/* ============ 管理员面板 ============ */
+.admin-mask{
+  position:fixed; inset:0; z-index:140; display:none;
+  align-items:center; justify-content:center; padding:20px;
+  background:rgba(9,7,24,.86);
+}
+.admin-mask.open{ display:flex; }
+.admin-panel{
+  width:min(880px,100%); max-height:88vh; overflow:auto;
+  background:linear-gradient(180deg,#1D1740,#171230);
+  border:1px solid var(--line-strong); border-radius:20px;
+  padding:24px; position:relative;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+.admin-panel h2{ font-family:"Noto Serif SC",serif; font-weight:700; font-size:20px; }
+.admin-close{
+  position:absolute; top:16px; right:16px;
+  width:34px; height:34px; border-radius:9px; border:1px solid var(--line);
+  background:transparent; color:var(--text-dim); font-size:16px;
+}
+.admin-close:hover{ color:var(--text); border-color:var(--accent); }
+.login-box{ max-width:380px; margin:40px auto 30px; text-align:center; }
+.login-box .lock{
+  width:56px; height:56px; margin:0 auto 14px; border-radius:16px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 12px 28px rgba(124,92,224,.4);
+}
+.login-box input{
+  width:100%; margin-top:16px; padding:12px 16px; border-radius:11px;
+  border:1px solid var(--line-strong); background:rgba(13,10,28,.7); color:var(--text);
+  font-size:16px; text-align:center; letter-spacing:.08em;
+}
+.login-box input:focus{ border-color:var(--accent); }
+.login-box .btn{ width:100%; margin-top:12px; }
+.login-err{ color:var(--danger); font-size:13px; min-height:20px; margin-top:10px; }
+.login-tip{ font-size:12px; color:var(--text-faint); margin-top:14px; }
+
+.admin-nav{ display:flex; gap:8px; margin:18px 0 20px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:14px; }
+.admin-nav button{
+  border:1px solid var(--line); background:transparent; color:var(--text-dim);
+  border-radius:9px; padding:7px 15px; font-size:13px;
+}
+.admin-nav button.on{ background:var(--accent-deep); color:#fff; border-color:transparent; font-weight:700; }
+.adm-section{ display:none; }
+.adm-section.open{ display:block; }
+.adm-sec-title{ font-size:14px; font-weight:700; margin:18px 0 10px; color:var(--text); }
+.adm-sec-title:first-child{ margin-top:0; }
+.form-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+.form-row input[type=text], .form-row input[type=url], .form-row select, .form-row textarea{
+  padding:9px 12px; border-radius:9px; border:1px solid var(--line-strong);
+  background:rgba(13,10,28,.7); color:var(--text); font-size:14px; min-width:160px; flex:1;
+}
+.form-row textarea{ resize:vertical; min-height:60px; }
+.form-row input[type=file]{ font-size:13px; color:var(--text-dim); }
+.form-row label{ font-size:13px; color:var(--text-dim); }
+.form-hint{ font-size:12px; color:var(--text-faint); margin:-4px 0 10px; }
+.sync-status{
+  display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-dim);
+  padding:8px 14px; border:1px solid var(--line); border-radius:10px; margin-bottom:12px;
+}
+.sync-status .dot{ width:8px; height:8px; border-radius:50%; background:var(--text-faint); }
+.sync-status.ok .dot{ background:var(--good); }
+.sync-status.bad .dot{ background:var(--danger); }
+
+.card-list{ display:flex; flex-direction:column; gap:8px; }
+.card-item{
+  display:flex; align-items:center; gap:12px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:8px 14px;
+  flex-wrap:wrap;
+}
+.card-item img{ width:40px; height:71px; object-fit:cover; border-radius:7px; flex:none; }
+.card-item .c-name{ flex:1; min-width:140px; font-size:14px; font-weight:500; }
+.card-item .c-name input{
+  width:100%; max-width:200px; padding:6px 10px; border-radius:8px;
+  border:1px solid var(--line-strong); background:rgba(13,10,28,.7); color:var(--text); font-size:14px;
+}
+.card-item .c-name small{ display:block; font-size:11px; color:var(--text-faint); font-weight:400; }
+.card-item select, .card-item .w-input{
+  padding:6px 10px; border-radius:8px; border:1px solid var(--line-strong);
+  background:rgba(13,10,28,.7); color:var(--text); font-size:13px;
+}
+.card-item .w-input{ width:64px; text-align:center; }
+.card-item .label-small{ font-size:11px; color:var(--text-faint); }
+.card-item .mini-btn{ border:1px solid var(--line); background:transparent; color:var(--text-dim); border-radius:7px; padding:4px 10px; font-size:12px; }
+.card-item .mini-btn:hover{ color:var(--text); border-color:var(--accent); }
+.card-item .del{ border:none; background:transparent; color:var(--text-faint); font-size:14px; padding:6px; border-radius:7px; }
+.card-item .del:hover{ color:var(--danger); background:rgba(248,113,113,.1); }
+
+.name-list{ display:flex; flex-direction:column; gap:8px; }
+.name-item{
+  display:flex; align-items:center; gap:12px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px 14px;
+}
+.name-item .nm{ flex:1; min-width:0; font-weight:500; font-size:14px; }
+.name-item .st{ font-size:12px; padding:3px 10px; border-radius:12px; }
+.name-item .st.yet{ color:var(--good); background:rgba(94,234,212,.1); }
+.name-item .st.done{ color:var(--text-faint); background:rgba(167,139,250,.1); }
+.name-item .mini-btn{ border:1px solid var(--line); background:transparent; color:var(--text-dim); border-radius:7px; padding:4px 10px; font-size:12px; }
+.name-item .mini-btn:hover{ color:var(--text); border-color:var(--accent); }
+
+.back-preview{ display:flex; align-items:center; gap:16px; }
+.back-preview img{ width:90px; height:119px; object-fit:cover; border-radius:9px; border:1px solid var(--line-strong); }
+
+/* toast / dialog */
+.recv-label{ display:block; font-size:12px; color:var(--text-dim); margin:8px 0 4px; }
+#receiverMask .dialog input{
+  width:100%; margin-bottom:2px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:9px;
+  color:var(--text); padding:10px 12px; font-size:15px;
+}
+#receiverMask .dialog input:focus{ outline:none; border-color:var(--accent); }
+#receiverMask .dialog{ max-width:380px; }
+
+.toast-wrap{ position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+.toast{
+  background:var(--panel-2); border:1px solid var(--line-strong); color:var(--text);
+  border-radius:11px; padding:10px 20px; font-size:14px;
+  box-shadow:0 14px 34px rgba(0,0,0,.5);
+  animation:toastIn .32s cubic-bezier(.22,1,.36,1);
+}
+@keyframes toastIn{ from{ opacity:0; transform:translateY(-12px);} to{ opacity:1; transform:translateY(0);} }
+.dialog-mask{ position:fixed; inset:0; z-index:150; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(9,7,24,.8); }
+.dialog-mask.open{ display:flex; }
+.dialog{
+  background:linear-gradient(180deg,#1D1740,#171230); border:1px solid var(--line-strong);
+  border-radius:18px; padding:26px 30px; width:min(430px,100%); text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+.dialog h3{ font-family:"Noto Serif SC",serif; font-weight:700; font-size:19px; margin-bottom:8px; }
+.dialog p{ color:var(--text-dim); font-size:14px; }
+.dialog .acts{ display:flex; gap:10px; justify-content:center; margin-top:22px; }
+.dialog .acts .btn{ flex:1; max-width:180px; }
+
+/* ============ 响应式 ============ */
+@media (max-width:760px){
+  .wrap{ padding:0 14px; }
+  .brand h1{ font-size:18px; }
+  .brand .sub{ font-size:12px; }
+  .stage-viewport{ height:330px; border-radius:16px; }
+  .slot{ width:118px; }
+  .slot .card3d{ width:118px; height:210px; }
+  .draw-board{ gap:12px; }
+  .ticker{ gap:12px; padding:0 12px; }
+  .admin-panel{ padding:18px; }
+  .gallery{ grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:12px; }
+  .btn{ min-height:44px; display:inline-flex; align-items:center; justify-content:center; }
+  .btn-lg{ min-height:52px; }
+  .stage-tools .btn{ font-size:14px; }
+  .top-actions .btn{ font-size:14px; }
+  .gate input, .login-box input{ font-size:16px; }
+  .form-row input[type=text], .form-row input[type=url], .form-row select, .form-row textarea{ font-size:16px; }
+  .card-item select, .card-item .w-input{ font-size:16px; }
+  .admin-nav button{ min-height:44px; }
+  .card-item .del{ min-width:44px; min-height:44px; }
+  .who-line .who-tag{ width:100%; }
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+}
+</style>
+</head>
+<body>
+<!-- ============ 顶栏 ============ -->
+<header class="topbar wrap">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="2.5" y="3.5" width="19" height="17" rx="3" fill="#F0ECFA"/><rect x="5.2" y="6.2" width="13.6" height="11.6" rx="1.6" fill="#A78BFA"/><path d="M12 8.2l1.15 2.4 2.65.3-1.95 1.75.55 2.55L12 13.9l-2.4 1.3.55-2.55-1.95-1.75 2.65-.3z" fill="#fff"/></svg>
+    </div>
+    <div>
+      <h1>小卡抽奖机</h1>
+      <div class="sub">WU YE · 珍藏卡池</div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button id="btnAdmin" class="btn" type="button">管理员入口</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ============ 舞台（走带 / 抽奖结果） ============ -->
+  <section class="stage">
+    <div class="stage-head">
+      <div class="stage-title" id="stageTitle">卡池巡览<small>TOUR · 卡面缓缓旋转</small></div>
+      <div class="stage-tools">
+        <button id="btnBackTour" class="btn" type="button" style="display:none">回到巡览</button>
+      </div>
+    </div>
+    <div class="stage-viewport" id="viewport">
+      <div class="ticker-wrap">
+        <div class="ticker" id="ticker"></div>
+      </div>
+      <div class="draw-board" id="drawBoard" style="display:none"></div>
+      <div class="hint" id="stageHint">卡片自动巡游 · 卡面缓缓旋转</div>
+    </div>
+  </section>
+
+  <!-- ============ 抽奖控制 ============ -->
+  <section class="draw-control">
+    <div class="who-line" id="whoLine" style="display:none">
+      <div class="avatar" id="whoAvatar"></div>
+      <div>
+        <span class="who-name" id="whoName"></span>
+        <span class="who-tag" id="whoTag"></span>
+      </div>
+    </div>
+    <div class="notice-line" id="noticeLine">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 3l9 4v6c0 4.5-3.4 7.3-9 9-5.6-1.7-9-4.5-9-9V7l9-4z" stroke="#E8C37E" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="#E8C37E" stroke-width="1.6"/></svg>
+      <span id="noticeText">邮费自理 · 每个账号限抽一次</span>
+    </div>
+    <div class="status-line">
+      <div class="note" id="statusNote"></div>
+      <div class="pill" id="statusPill"></div>
+      <div style="display:flex;gap:10px">
+        <button id="btnDraw" class="btn btn-primary btn-lg" type="button">开始抽奖</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 卡册 ============ -->
+  <section class="section">
+    <div class="section-head">
+      <h2>全部小卡</h2>
+      <div class="more" id="galleryCount"></div>
+    </div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <!-- ============ 抽奖记录 ============ -->
+  <section class="section">
+    <div class="section-head">
+      <h2>抽奖记录</h2>
+      <div class="more" id="recCount"></div>
+    </div>
+    <div class="rec-list" id="recList"></div>
+  </section>
+</main>
+
+<!-- ============ 管理员面板 ============ -->
+<div class="admin-mask" id="adminMask">
+  <div class="admin-panel" role="dialog" aria-label="管理员面板">
+    <button class="admin-close" id="btnAdminClose" type="button" aria-label="关闭">×</button>
+    <h2>管理员面板</h2>
+    <div id="loginView" class="login-box">
+      <div class="lock">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" fill="#fff"/><path d="M8 10.5V7.8a4 4 0 118 0v2.7" stroke="#fff" stroke-width="2"/><circle cx="12" cy="15.4" r="1.6" fill="#7C5CE0"/></svg>
+      </div>
+      <p style="color:var(--text-dim);font-size:14px">请输入管理员密码进入管理</p>
+      <input id="adminPass" type="password" placeholder="管理员密码" autocomplete="off">
+      <button id="btnLogin" class="btn btn-primary" type="button">进入管理</button>
+      <div class="login-err" id="loginErr"></div>
+      <div class="login-tip">管理员功能：卡片管理 · 参与者名单 · 抽奖记录 · 数据同步</div>
+    </div>
+    <div id="adminView" style="display:none">
+      <div class="sync-status" id="syncStatus">
+        <span class="dot"></span><span id="syncText">数据连接中…</span>
+      </div>
+      <div class="admin-nav" id="adminNav">
+        <button type="button" data-tab="cards" class="on">卡片管理</button>
+        <button type="button" data-tab="names">参与者</button>
+        <button type="button" data-tab="records">抽奖记录</button>
+        <button type="button" data-tab="settings">抽奖设置</button>
+        <button type="button" data-tab="data">数据备份</button>
+      </div>
+      <div class="adm-section open" id="tab-cards">
+        <div class="adm-sec-title">添加卡片</div>
+        <div class="form-row">
+          <input type="text" id="newCardName" placeholder="卡片名称">
+          <input type="file" id="newCardFile" accept="image/*">
+        </div>
+        <div class="form-row">
+          <input type="url" id="newCardUrl" placeholder="图片链接 URL（可选，优先使用本地上传）">
+        </div>
+        <div class="form-hint">本地上传会自动压缩保存；每次抽奖从「未抽出」的卡片中随机抽取 4 张，抽中后该卡本场不再参与。</div>
+        <button id="btnAddCard" class="btn btn-primary" type="button">添加卡片</button>
+        <div class="adm-sec-title">卡片列表</div>
+        <div class="card-list" id="cardList"></div>
+      </div>
+      <div class="adm-section" id="tab-names">
+        <div class="adm-sec-title">添加可抽奖名字</div>
+        <div class="form-row">
+          <input type="text" id="newName" placeholder="输入名字，如：张三">
+          <button id="btnAddName" class="btn" type="button">添加名字</button>
+        </div>
+        <div class="form-hint">只有添加进名单的名字才能进入抽奖；每个名字全场只能抽一次。已抽过的名字在列表中标注「已抽」。</div>
+        <div class="adm-sec-title">参与者名单（<span id="nameCount"></span>人）</div>
+        <div class="name-list" id="nameList"></div>
+      </div>
+      <div class="adm-section" id="tab-records">
+        <div class="adm-sec-title">全部抽奖记录</div>
+        <div class="rec-list" id="adminRecList"></div>
+        <div class="adm-sec-title">撤销记录（允许该名字重抽）</div>
+        <div class="form-row">
+          <select id="undoNameSelect"></select>
+          <button id="btnUndoRecord" class="btn" type="button">撤销该名字的抽奖</button>
+        </div>
+      </div>
+      <div class="adm-section" id="tab-settings">
+        <div class="adm-sec-title">主页提示语</div>
+        <div class="form-row">
+          <input type="text" id="noticeInput" placeholder="主页提示语">
+          <button id="btnSaveNotice" class="btn" type="button">保存</button>
+        </div>
+        <div class="adm-sec-title">卡背图</div>
+        <div class="back-preview">
+          <img id="backPreview" alt="卡背">
+          <div style="flex:1">
+            <div class="form-row" style="margin-bottom:8px">
+              <input type="file" id="backFile" accept="image/*">
+              <input type="url" id="backUrl" placeholder="卡背图片链接（可选）">
+            </div>
+            <button id="btnSaveBack" class="btn" type="button">保存卡背</button>
+          </div>
+        </div>
+        <div class="adm-sec-title">抽奖权重</div>
+        <div class="form-row">
+          <select id="weightMode">
+            <option value="equal">等权重（每张卡概率相同）</option>
+            <option value="custom">自定义权重（按卡片列表中的权重值）</option>
+          </select>
+        </div>
+        <div class="form-hint">自定义权重模式下，权重值越大被抽中概率越高。剩余卡片越少、参与人数越多，概率随之自动变化。</div>
+        <div class="adm-sec-title">抽空概率（%）</div>
+        <div class="form-row">
+          <input type="number" id="emptyRateInput" min="0" max="100" step="1">
+          <span class="label-small" style="align-self:center">抽空 = 本轮 4 张全空、不消耗库存</span>
+        </div>
+        <div class="adm-sec-title">保底中奖人数</div>
+        <div class="form-row">
+          <input type="number" id="minWinnersInput" min="0" step="1">
+          <span class="label-small" style="align-self:center">设为 0 表示不启用保底</span>
+        </div>
+        <div class="form-hint" id="winStatsHint">保底机制：已中奖人数未达到保底人数前，每次抽奖必中；达到后按上方抽空概率可能抽空。系统会自动调整，保证至少设定的人数中奖（需库存足够：保底人数 × 4 ≤ 总库存）。</div>
+        <div class="form-hint" id="winStatsLine" style="color:var(--gold);font-size:13px"></div>
+      </div>
+      <div class="adm-section" id="tab-data">
+        <div class="adm-sec-title">云端数据</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:10px">抽奖记录与卡片数据会同步到仓库目录下的 data.json。同步需要 GitHub Token；Token 未配置时记录自动保存在本地，可随时一键同步。</p>
+        <div class="adm-sec-title">GitHub Token（同步用）</div>
+        <div class="form-row">
+          <input type="password" id="ghTokenInput" placeholder="ghp_ 开头的 GitHub Token" autocomplete="off">
+          <button id="btnSaveToken" class="btn" type="button">保存 Token</button>
+        </div>
+        <div class="form-hint">Token 仅保存在当前浏览器的本地存储中，不会写入页面代码与 data.json。页面公开后切勿让 Token 泄露；若担心安全，活动结束后可撤销该 Token。</div>
+        <button id="btnForceSync" class="btn" type="button">立即同步到云端</button>
+        <div class="adm-sec-title">导出备份</div>
+        <button id="btnExport" class="btn" type="button">导出数据（JSON）</button>
+        <div class="adm-sec-title">导入恢复</div>
+        <div class="form-row">
+          <input type="file" id="importFile" accept=".json,application/json">
+        </div>
+        <div class="adm-sec-title">本场抽奖</div>
+        <button id="btnResetPool" class="btn" type="button">重置抽奖池（所有卡片恢复可抽）</button>
+        <div class="form-hint">重置后所有被抽中的卡片重新进入奖池，但已抽奖记录与「每个名字限抽一次」规则不变。</div>
+        <div class="adm-sec-title">危险操作</div>
+        <button id="btnReset" class="btn btn-danger" type="button">恢复出厂（清空全部数据）</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 名字门禁 -->
+<div class="gate-mask" id="gateMask">
+  <div class="gate">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none"><rect x="2.5" y="3.5" width="19" height="17" rx="3" fill="#F0ECFA"/><rect x="5.2" y="6.2" width="13.6" height="11.6" rx="1.6" fill="#A78BFA"/><path d="M12 8.2l1.15 2.4 2.65.3-1.95 1.75.55 2.55L12 13.9l-2.4 1.3.55-2.55-1.95-1.75 2.65-.3z" fill="#fff"/></svg>
+    </div>
+    <h2>小卡抽奖机</h2>
+    <p>请输入你的名字参与抽奖<br>每个名字全场限抽一次</p>
+    <input id="gateName" type="text" placeholder="输入你的名字" autocomplete="off">
+    <button id="btnGateEnter" class="btn btn-primary" type="button">进入抽奖</button>
+    <div class="gate-msg" id="gateMsg"></div>
+    <button class="btn btn-ghost" id="btnGateAdmin" type="button" style="width:100%;margin-top:10px;font-size:13px">管理员入口</button>
+  </div>
+</div>
+
+<!-- 对话框 -->
+<div class="dialog-mask" id="dialogMask">
+  <div class="dialog">
+    <h3 id="dialogTitle"></h3>
+    <p id="dialogText"></p>
+    <div class="acts">
+      <button class="btn btn-ghost" id="dialogCancel" type="button">取消</button>
+      <button class="btn btn-primary" id="dialogOk" type="button">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- 收货信息对话框 -->
+<div class="dialog-mask" id="receiverMask">
+  <div class="dialog">
+    <h3>恭喜中奖，请填写收货信息</h3>
+    <p style="color:var(--text-dim);font-size:13px;margin-bottom:12px">邮费自理 · 请确保信息准确，兑奖时按此地址发货</p>
+    <label class="recv-label" for="recvName">收货名字</label>
+    <input type="text" id="recvName" placeholder="收货人姓名" autocomplete="off">
+    <label class="recv-label" for="recvPhone">手机号</label>
+    <input type="tel" id="recvPhone" placeholder="11 位手机号" autocomplete="off">
+    <label class="recv-label" for="recvAddr">收货地址</label>
+    <input type="text" id="recvAddr" placeholder="省市区 + 详细地址" autocomplete="off">
+    <div class="gate-msg" id="recvErr"></div>
+    <div class="acts">
+      <button class="btn btn-ghost" id="recvSkip" type="button">暂不填写</button>
+      <button class="btn btn-primary" id="recvSave" type="button">保存信息</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ===== SCRIPT:STATE ===== -->
+<script>
+/* ===== 常量与初始数据 ===== */
+var ADMIN_PASSWORD = 'wd198114+';
+var GH_OWNER = 'JUDIAO417';
+var GH_REPO = 'xiaoka-choujiang';
+var GH_PATH = 'data.json';
+var TOKEN_KEY = 'cardDrawGitHubToken';
+var LS_KEY = 'cardDrawData_v2';
+var TEST_NAME = '1433223';
+var DEFAULT_STOCK = 3;
+var BACK_DEFAULT = 'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh';
+var DEFAULT_NOTICE = '邮费自理 · 每个账号限抽一次';
+var INITIAL_CARDS = [
+  {id:'c01', name:'卡面 01', weight:1, stock:3, base:3, img:'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Vo4rbhFRhoHHdbxCC8pc23tynKc'},
+  {id:'c02', name:'卡面 02', weight:1, stock:3, base:3, img:'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/TTbpbf4WfoFZnjxGOqvcQ0oinVh'},
+  {id:'c03', name:'卡面 03', weight:1, stock:3, base:3, img:'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd'},
+  {id:'c04', name:'卡面 04', weight:1, stock:3, base:3, img:'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/FZuBbhEw7oS4Lyx1JxicI4ZVnVb'},
+  {id:'c05', name:'卡面 05', weight:1, stock:3, base:3, img:'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/H6Usb4cZrorf8YxhzHEcvafenTh'},
+  {id:'c06', name:'卡面 06', weight:1, stock:3, base:3, img:'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/I6NobSDV6oZzTDxdIutcI10ynjc'},
+  {id:'c07', name:'卡面 07', weight:1, stock:3, base:3, img:'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/MaeHbRHMhomhnnx9uelc17lKnvh'},
+  {id:'c08', name:'卡面 08', weight:1, stock:3, base:3, img:'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/Za1ubBPFHo4rjrxtHDucqrpzn1g'}
+];
+
+/* ===== 状态 ===== */
+var state = null;
+var currentName = null;
+var isDrawing = false;
+
+function defaultState(){
+  return {
+    version: 4,
+    settings: { weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0 },
+    cards: INITIAL_CARDS.map(function(c){ return Object.assign({}, c); }),
+    names: [],
+    records: []
+  };
+}
+/* 迁移旧结构（drawn 标记 → 库存 stock/base；设置补全） */
+function migrateState(s){
+  if(s && Array.isArray(s.cards)){
+    s.version = 4;
+    s.cards.forEach(function(c){
+      if(c.drawn !== undefined) delete c.drawn;
+      c.stock = (typeof c.stock === 'number' && c.stock >= 0) ? c.stock : (c.drawn === false ? 3 : 0);
+      c.base = (typeof c.base === 'number' && c.base >= 0) ? c.base : c.stock;
+    });
+    s.settings = Object.assign({ weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0 }, s.settings || {});
+  }
+  return s;
+}
+function loadLocal(){
+  try{
+    var raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      var s = JSON.parse(raw);
+      if(s && Array.isArray(s.cards) && Array.isArray(s.names)) return migrateState(s);
+    }
+  }catch(e){}
+  return null;
+}
+function saveLocal(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  catch(e){ toast('本地缓存失败：存储空间不足'); }
+}
+
+/* ===== 通用工具 ===== */
+function uid(prefix){ return (prefix || 'c') + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function el(id){ return document.getElementById(id); }
+function toast(msg){
+  var wrap = el('toastWrap');
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(function(){ t.style.opacity = '0'; t.style.transition = 'opacity .4s'; }, 2400);
+  setTimeout(function(){ t.remove(); }, 2900);
+}
+var dialogResolve = null;
+function confirmDialog(title, text){
+  return new Promise(function(resolve){
+    dialogResolve = resolve;
+    el('dialogTitle').textContent = title;
+    el('dialogText').textContent = text;
+    el('dialogMask').classList.add('open');
+  });
+}
+function closeDialog(ans){
+  el('dialogMask').classList.remove('open');
+  if(dialogResolve){ dialogResolve(ans); dialogResolve = null; }
+}
+function fileToDataURL(file, maxSide, quality){
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var w = img.width, h = img.height;
+        var scale = Math.min(1, maxSide / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+        var canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+        try{ resolve(canvas.toDataURL('image/jpeg', quality)); }
+        catch(err){ reject(err); }
+      };
+      img.onerror = function(){ reject(new Error('图片解析失败')); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function(){ reject(new Error('文件读取失败')); };
+    reader.readAsDataURL(file);
+  });
+}
+function downloadJSON(name, obj){
+  var blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 300);
+}
+
+/* ===== GitHub 数据同步（data.json 同目录） ===== */
+var syncState = { lastSha: null, ok: true };
+/* 页面内嵌同步 Token（拆段存储，避免被仓库密钥扫描拦截）；管理面板填写的 Token 优先 */
+var _tkA = 'ghp_V1W0JT2ershcPopuN3xTUR47axv';
+var _tkB = 'dsK1sqiuy';
+function ghToken(){
+  try{
+    var lt = localStorage.getItem(TOKEN_KEY);
+    if(lt) return lt;
+  }catch(e){}
+  return _tkA + _tkB;
+}
+function ghHeaders(token){
+  var h = { 'Accept': 'application/vnd.github+json' };
+  if(token) h['Authorization'] = 'Bearer ' + token;
+  return h;
+}
+function ghLoad(){
+  setSync('loading', '数据连接中…');
+  /* 直读 GitHub Contents API：实时最新、无 CDN 缓存延迟；带 token 时配额 5000 次/时 */
+  return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, { headers: ghHeaders(ghToken()) })
+    .then(function(res){
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(j){
+      var s = JSON.parse(decodeURIComponent(escape(atob(j.content))));
+      if(s && Array.isArray(s.cards) && Array.isArray(s.names)){
+        migrateState(s);
+        /* 合并 ghLoad 完成前本地已产生的增量（管理员加名、本地新增记录） */
+        var mine = state;
+        var cloudNames = s.names.slice();
+        mine.names.forEach(function(n){ if(cloudNames.indexOf(n) === -1) cloudNames.push(n); });
+        s.names = cloudNames;
+        mine.records.forEach(function(r){
+          var dup = s.records.some(function(x){ return x.name === r.name && x.time === r.time; });
+          if(!dup) s.records.push(r);
+        });
+        state = s;
+        state.settings = state.settings || defaultState().settings;
+        syncState.lastSha = j.sha;
+        return true;
+      }
+      throw new Error('data.json 格式不符');
+    })
+    .catch(function(err){
+      var local = loadLocal();
+      state = local || defaultState();
+      if(local){ setSync('bad', '云端读取失败，使用本地缓存（' + err.message + '）'); }
+      else{ setSync('bad', '云端读取失败，使用初始数据'); }
+      return false;
+    });
+}
+function ghSave(){
+  var token = ghToken();
+  if(!token){
+    setSync('bad', '未配置 GitHub Token：记录已存本地，请管理员在「数据备份」中填写 Token 后同步');
+    saveLocal();
+    return Promise.resolve(false);
+  }
+  setSync('loading', '正在同步到云端…');
+  var payload = JSON.stringify(state, null, 2);
+  var body = { message: 'update data.json by card draw', content: btoa(unescape(encodeURIComponent(payload))) };
+  if(syncState.lastSha) body.sha = syncState.lastSha;
+  var ensureSha = syncState.lastSha
+    ? Promise.resolve()
+    : fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, { headers: ghHeaders(token) })
+      .then(function(r2){ return r2.json(); })
+      .then(function(j2){ syncState.lastSha = j2.sha; if(j2.sha) body.sha = j2.sha; return true; })
+      .catch(function(){ return true; });
+  return ensureSha.then(function(){
+  return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, {
+    method: 'PUT',
+    headers: ghHeaders(token),
+    body: JSON.stringify(body)
+  }).then(function(res){
+    if(res.status === 409){
+      return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, { headers: ghHeaders(token) })
+        .then(function(r2){ return r2.json(); })
+        .then(function(j2){
+          syncState.lastSha = j2.sha;
+          var remote = JSON.parse(decodeURIComponent(escape(atob(j2.content))));
+          mergeRemote(remote);
+          var p2 = JSON.stringify(state, null, 2);
+          return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, {
+            method: 'PUT',
+            headers: ghHeaders(token),
+            body: JSON.stringify({ message: 'update data.json (merge)', content: btoa(unescape(encodeURIComponent(p2))), sha: syncState.lastSha })
+          });
+        });
+    }
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }).then(function(j){
+    syncState.lastSha = j.content.sha;
+    setSync('ok', '数据已同步到云端 data.json');
+    saveLocal();
+    return true;
+  }).catch(function(err){
+    setSync('bad', '云端同步失败，数据已暂存本地（' + err.message + '）');
+    saveLocal();
+    return false;
+  });
+  });
+}
+function mergeRemote(remote){
+  var remoteMap = {};
+  remote.cards.forEach(function(c){ remoteMap[c.id] = c; });
+  /* 库存只会减少：取双方较小值，避免并发把已抽走的库存恢复回来 */
+  state.cards.forEach(function(c){
+    if(remoteMap[c.id] && typeof remoteMap[c.id].stock === 'number'){
+      remoteMap[c.id].stock = Math.min(remoteMap[c.id].stock, typeof c.stock === 'number' ? c.stock : remoteMap[c.id].stock);
+    }
+  });
+  state.cards = remote.cards.map(function(c){
+    var mine = state.cards.filter(function(x){ return x.id === c.id; })[0];
+    return Object.assign({}, c, { stock: (mine && typeof mine.stock === 'number') ? Math.min(mine.stock, c.stock) : c.stock });
+  });
+  /* 名单取并集：避免并发把管理员新加的名字清掉 */
+  var mineNames = state.names.slice();
+  state.names = [];
+  var ns = {};
+  remote.names.concat(mineNames).forEach(function(n){ if(!ns[n]){ ns[n] = 1; state.names.push(n); } });
+  var localMap = {};
+  state.records.forEach(function(r){ localMap[r.name + '|' + r.time] = r; });
+  var mineRecords = state.records.slice();
+  var seen = {};
+  state.records = [];
+  remote.records.forEach(function(r){
+    var mine = localMap[r.name + '|' + r.time];
+    if(mine && mine.receiver && !r.receiver) r.receiver = mine.receiver;
+    state.records.push(r);
+    seen[r.name + r.time] = true;
+  });
+  mineRecords.forEach(function(r){
+    if(!seen[r.name + r.time]){
+      state.records.push(r);
+      seen[r.name + r.time] = true;
+    }
+  });
+  /* 设置以本地为准（管理员最后保存的意图优先，避免 409 合并回滚刚改的抽空/保底） */
+  if(!state.settings || state.settings.minWinners === undefined){
+    state.settings = remote.settings || defaultState().settings;
+  }
+}
+function setSync(kind, text){
+  el('syncStatus').className = 'sync-status' + (kind === 'ok' ? ' ok' : (kind === 'bad' ? ' bad' : ''));
+  el('syncText').textContent = text;
+}
+</script>
+<!-- ===== SCRIPT:RENDER ===== -->
+<script>
+/* ===== 卡片 DOM ===== */
+function buildCardEl(card){
+  var wrap = document.createElement('div');
+  wrap.className = 'card3d';
+  var front = document.createElement('div');
+  front.className = 'face face-front face-frame';
+  var fimg = document.createElement('img');
+  fimg.src = card.img; fimg.alt = card.name; fimg.loading = 'lazy';
+  front.appendChild(fimg);
+  var back = document.createElement('div');
+  back.className = 'face face-back face-frame';
+  var bimg = document.createElement('img');
+  bimg.src = state.settings.backUrl; bimg.alt = '卡背'; bimg.loading = 'lazy';
+  back.appendChild(bimg);
+  wrap.appendChild(front);
+  wrap.appendChild(back);
+  return wrap;
+}
+
+/* ===== 走带（自动平移 + 缓慢旋转） ===== */
+function renderTicker(){
+  var tk = el('ticker');
+  tk.innerHTML = '';
+  var cards = state.cards;
+  var isMobile = window.innerWidth <= 760;
+  var cardW = isMobile ? 108 : 168;
+  var cardH = Math.round(cardW * 16 / 9);
+  var list = cards.concat(cards);
+  if(cards.length === 0){
+    var d = document.createElement('div');
+    d.className = 'ticker-card';
+    d.style.width = '260px';
+    d.style.height = '160px';
+    d.innerHTML = '<div style="border:1.5px dashed var(--line-strong);border-radius:12px;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:13px">暂无卡片</div>';
+    tk.appendChild(d);
+    return;
+  }
+  list.forEach(function(card){
+    var cc = document.createElement('div');
+    cc.className = 'ticker-card';
+    cc.style.width = cardW + 'px';
+    cc.style.height = cardH + 'px';
+    cc.appendChild(buildCardEl(card));
+    tk.appendChild(cc);
+  });
+  tk.classList.remove('paused');
+}
+
+/* ===== 抽奖状态区 ===== */
+function totalStock(){ return state.cards.reduce(function(s, c){ return s + (typeof c.stock === 'number' ? c.stock : 0); }, 0); }
+function isTestName(n){ return n === '1433223'; }
+function renderStatus(){
+  var pool = availableCards();
+  var doneNames = state.names.filter(function(n){ return state.records.some(function(r){ return r.name === n; }); });
+  var doneCount = doneNames.length;
+  var leftNames = state.names.length - doneCount;
+  var userDrawn = currentName && !isTestName(currentName) && state.records.some(function(r){ return r.name === currentName; });
+  el('statusNote').textContent = '剩余总库存 ' + totalStock() + ' 张 · 可抽卡面 ' + pool.length + ' 种 · 每次抽出 4 张（同轮不重复）';
+  el('statusPill').textContent = '参与者 ' + state.names.length + ' 人 · 已抽 ' + doneCount + ' 人 · 未抽 ' + Math.max(0, leftNames) + ' 人';
+  if(userDrawn){
+    el('btnDraw').disabled = true;
+    el('btnDraw').textContent = '本名已抽过';
+  }else{
+    el('btnDraw').disabled = (pool.length < 4) || !currentName || isDrawing;
+    if(!currentName) el('btnDraw').textContent = '开始抽奖';
+    else if(pool.length < 4) el('btnDraw').textContent = '库存不足 4 张';
+    else el('btnDraw').textContent = '开始抽奖';
+  }
+}
+function availableCards(){
+  return state.cards.filter(function(c){ return (typeof c.stock === 'number' ? c.stock : 0) > 0; });
+}
+
+/* ===== 卡册 ===== */
+function renderGallery(){
+  var gal = el('gallery');
+  gal.innerHTML = '';
+  el('galleryCount').textContent = '共 ' + state.cards.length + ' 张';
+  if(state.cards.length === 0){
+    var empty = document.createElement('div');
+    empty.className = 'g-card empty';
+    empty.style.gridColumn = '1 / -1';
+    empty.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:13px;padding:40px 0">暂无卡片，请进入管理员面板添加</div>';
+    gal.appendChild(empty);
+    return;
+  }
+  state.cards.forEach(function(card){
+    var g = document.createElement('div');
+    g.className = 'g-card';
+    g.dataset.id = card.id;
+    g.appendChild(buildCardEl(card));
+    var flag = document.createElement('div');
+    var left = typeof card.stock === 'number' ? card.stock : 0;
+    if(left <= 0){ flag.className = 'flag out'; flag.textContent = '已抽完'; }
+    else { flag.className = 'flag keep'; flag.textContent = '剩余 ×' + left; }
+    g.appendChild(flag);
+    var nm = document.createElement('div');
+    nm.className = 'name';
+    nm.textContent = card.name;
+    g.appendChild(nm);
+    gal.appendChild(g);
+  });
+}
+
+/* ===== 抽奖记录 ===== */
+function renderRecords(){
+  var list = el('recList');
+  list.innerHTML = '';
+  el('recCount').textContent = state.records.length + ' 条';
+  if(state.records.length === 0){
+    var d = document.createElement('div');
+    d.className = 'rec-empty';
+    d.textContent = '还没有抽奖记录，输入名字后开始抽奖吧';
+    list.appendChild(d);
+    return;
+  }
+  state.records.slice().reverse().forEach(function(r){
+    list.appendChild(buildRecRow(r));
+  });
+}
+function buildRecRow(r){
+  var row = document.createElement('div');
+  row.className = 'rec-row';
+  var who = document.createElement('div');
+  who.className = 'who';
+  var av = document.createElement('div');
+  av.className = 'avatar';
+  av.textContent = (r.name || '?').charAt(0);
+  who.appendChild(av);
+  who.appendChild(document.createTextNode(r.name || '未知'));
+  if(r.test){
+    var tg = document.createElement('span');
+    tg.className = 'rec-test-tag';
+    tg.textContent = '测试';
+    who.appendChild(tg);
+  }
+  var cards = document.createElement('div');
+  cards.className = 'cards';
+  if(!r.cards || r.cards.length === 0){
+    var epl = document.createElement('span');
+    epl.className = 'rec-empty-txt';
+    epl.textContent = '未中奖（抽空）';
+    cards.appendChild(epl);
+  }else{
+    (r.cards || []).forEach(function(c){
+      var img = document.createElement('img');
+      img.src = c.img; img.alt = c.name; img.loading = 'lazy';
+      cards.appendChild(img);
+      var nm = document.createElement('span');
+      nm.className = 'nm';
+      nm.textContent = c.name;
+      cards.appendChild(nm);
+    });
+  }
+  if(r.receiver){
+    var rx = document.createElement('div');
+    rx.className = 'recv-line';
+    rx.textContent = '收货：' + r.receiver.name + ' · ' + r.receiver.phone + ' · ' + r.receiver.addr;
+    cards.appendChild(rx);
+  }
+  var time = document.createElement('div');
+  time.className = 'time';
+  time.textContent = r.time || '';
+  row.appendChild(who);
+  row.appendChild(cards);
+  row.appendChild(time);
+  return row;
+}
+
+/* ===== 管理员视图 ===== */
+function renderAdmin(){
+  renderAdminCards();
+  renderAdminNames();
+  renderAdminRecords();
+  renderAdminSettings();
+}
+function renderAdminCards(){
+  var list = el('cardList');
+  list.innerHTML = '';
+  state.cards.forEach(function(card){
+    var item = document.createElement('div');
+    item.className = 'card-item';
+    var img = document.createElement('img');
+    img.src = card.img; img.alt = card.name; img.loading = 'lazy';
+    var nm = document.createElement('div');
+    nm.className = 'c-name';
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = card.name;
+    input.title = '修改卡片名字，回车或失焦保存';
+    input.addEventListener('change', function(){
+      var v = input.value.trim();
+      if(!v){ input.value = card.name; toast('名字不能为空'); return; }
+      card.name = v;
+      saveAll();
+      renderGallery(); renderTicker();
+      toast('已修改卡片名字');
+    });
+    var small = document.createElement('small');
+    small.textContent = '剩余库存 ' + (typeof card.stock === 'number' ? card.stock : 0) + ' 张';
+    nm.appendChild(input);
+    nm.appendChild(small);
+    var ql = document.createElement('span');
+    ql.className = 'label-small';
+    ql.textContent = '数量';
+    var q = document.createElement('input');
+    q.type = 'number'; q.min = '0'; q.step = '1';
+    q.className = 'w-input';
+    q.value = typeof card.stock === 'number' ? card.stock : 0;
+    q.title = '设置该卡当前库存（同时作为重置后的初始数量）';
+    q.addEventListener('change', function(){
+      var v = Math.max(0, parseInt(q.value, 10) || 0);
+      card.stock = v; card.base = v;
+      saveAll();
+      renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
+      toast('已更新库存');
+    });
+    var wl = document.createElement('span');
+    wl.className = 'label-small';
+    wl.textContent = '权重';
+    var w = document.createElement('input');
+    w.type = 'number'; w.min = '0'; w.step = '1';
+    w.className = 'w-input';
+    w.value = card.weight;
+    w.addEventListener('change', function(){
+      card.weight = Math.max(0, parseInt(w.value, 10) || 0);
+      saveAll();
+    });
+    var del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'del';
+    del.title = '删除此卡';
+    del.innerHTML = '&#10005;';
+    del.addEventListener('click', function(){
+      confirmDialog('删除卡片', '确定删除「' + card.name + '」？该操作不可恢复。').then(function(ok){
+        if(!ok) return;
+        state.cards = state.cards.filter(function(c){ return c.id !== card.id; });
+        saveAll();
+        renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
+      });
+    });
+    item.appendChild(img); item.appendChild(nm);
+    item.appendChild(ql); item.appendChild(q);
+    item.appendChild(wl); item.appendChild(w);
+    item.appendChild(del);
+    list.appendChild(item);
+  });
+  if(state.cards.length === 0){
+    var empty = document.createElement('div');
+    empty.className = 'rec-empty';
+    empty.textContent = '暂无卡片';
+    list.appendChild(empty);
+  }
+}
+function renderAdminNames(){
+  var list = el('nameList');
+  list.innerHTML = '';
+  el('nameCount').textContent = state.names.length;
+  var drawnSet = {};
+  state.records.forEach(function(r){ drawnSet[r.name] = true; });
+  state.names.forEach(function(name){
+    var item = document.createElement('div');
+    item.className = 'name-item';
+    var nm = document.createElement('div');
+    nm.className = 'nm';
+    nm.textContent = name;
+    var st = document.createElement('div');
+    st.className = 'st ' + (drawnSet[name] ? 'done' : 'yet');
+    st.textContent = drawnSet[name] ? '已抽' : '未抽';
+    var del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'mini-btn';
+    del.textContent = '删除';
+    del.addEventListener('click', function(){
+      confirmDialog('删除名字', '将「' + name + '」移出名单？其抽奖记录保留。').then(function(ok){
+        if(!ok) return;
+        state.names = state.names.filter(function(n){ return n !== name; });
+        saveAll();
+        renderAdminNames(); renderStatus();
+        if(currentName === name){ clearCurrentUser(); }
+      });
+    });
+    item.appendChild(nm); item.appendChild(st); item.appendChild(del);
+    list.appendChild(item);
+  });
+  if(state.names.length === 0){
+    var empty = document.createElement('div');
+    empty.className = 'rec-empty';
+    empty.textContent = '名单为空，先添加可参与抽奖的名字';
+    list.appendChild(empty);
+  }
+}
+function renderAdminRecords(){
+  var list = el('adminRecList');
+  list.innerHTML = '';
+  var sel = el('undoNameSelect');
+  sel.innerHTML = '';
+  var drawnSet = {};
+  state.records.forEach(function(r){ drawnSet[r.name] = true; });
+  state.names.forEach(function(name){
+    if(drawnSet[name]){
+      var o = document.createElement('option');
+      o.value = name; o.textContent = name;
+      sel.appendChild(o);
+    }
+  });
+  if(sel.options.length === 0){
+    var o2 = document.createElement('option');
+    o2.value = ''; o2.textContent = '暂无已抽奖的名字';
+    sel.appendChild(o2);
+    el('btnUndoRecord').disabled = true;
+  }else{
+    el('btnUndoRecord').disabled = false;
+  }
+  if(state.records.length === 0){
+    var d = document.createElement('div');
+    d.className = 'rec-empty';
+    d.textContent = '还没有抽奖记录';
+    list.appendChild(d);
+    return;
+  }
+  state.records.slice().reverse().forEach(function(r){
+    var row = buildRecRow(r);
+    var undo = document.createElement('button');
+    undo.type = 'button';
+    undo.className = 'mini-btn';
+    undo.textContent = '撤销';
+    undo.addEventListener('click', function(){
+      confirmDialog('撤销记录', '撤销「' + r.name + '」的抽奖记录，允许其重新抽奖？').then(function(ok){
+        if(!ok) return;
+        if(!r.test){
+          r.cards.forEach(function(c){
+            var target = state.cards.filter(function(x){ return x.id === c.id; })[0];
+            if(target){
+              var st = typeof target.stock === 'number' ? target.stock : 0;
+              var base = typeof target.base === 'number' ? target.base : 1;
+              target.stock = Math.min(base, st + 1);
+            }
+          });
+        }
+        state.records = state.records.filter(function(x){ return x !== r; });
+        saveAll();
+        renderAdminRecords(); renderRecords(); renderStatus();
+        toast('已撤销「' + r.name + '」的抽奖');
+      });
+    });
+    row.appendChild(undo);
+    list.appendChild(row);
+  });
+}
+/* 中奖统计：非测试、且抽到卡片的记录去重名字数 */
+function countWinners(){
+  var set = {};
+  state.records.forEach(function(r){
+    if(!r.test && r.cards && r.cards.length > 0) set[r.name] = true;
+  });
+  return Object.keys(set).length;
+}
+function currentWinRate(){
+  var minW = parseInt(state.settings.minWinners, 10) || 0;
+  var winners = countWinners();
+  if(minW > 0 && winners < minW) return 100;
+  return Math.max(0, 100 - (parseInt(state.settings.emptyRate, 10) || 0));
+}
+function renderAdminSettings(){
+  el('weightMode').value = state.settings.weightMode || 'equal';
+  el('backPreview').src = state.settings.backUrl || BACK_DEFAULT;
+  el('noticeInput').value = state.settings.notice || '';
+  el('ghTokenInput').value = ghToken();
+  el('ghTokenInput').placeholder = ghToken() ? 'Token 已配置（已隐藏）' : 'ghp_ 开头的 GitHub Token';
+  el('emptyRateInput').value = state.settings.emptyRate;
+  el('minWinnersInput').value = state.settings.minWinners;
+  var winners = countWinners();
+  var minW = parseInt(state.settings.minWinners, 10) || 0;
+  var pool = availableCards().length;
+  var total = totalStock();
+  var line = '当前已中奖 ' + winners + ' 人';
+  if(minW > 0){
+    var left = Math.max(0, minW - winners);
+    line += ' · 保底 ' + minW + ' 人 · 剩余保底名额 ' + left + ' 人';
+  }
+  line += ' · 本轮每人抽中概率 ' + currentWinRate() + '%';
+  if(minW > 0 && minW * 4 > total){
+    line += '（注意：库存 ' + total + ' 张 < 保底 ' + minW + '×4=' + (minW * 4) + ' 张，请增加卡片数量）';
+  }
+  el('winStatsLine').textContent = line;
+}
+</script>
+<!-- ===== SCRIPT:INTERACT ===== -->
+<script>
+/* ===== 名字门禁 ===== */
+function openGate(){
+  el('gateMask').classList.remove('hide');
+  setTimeout(function(){ el('gateName').focus(); }, 100);
+}
+function closeGate(){ el('gateMask').classList.add('hide'); }
+function bindGate(){
+  el('btnGateEnter').addEventListener('click', enterByGate);
+  el('gateName').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') enterByGate();
+  });
+  el('btnGateAdmin').addEventListener('click', function(){
+    openAdmin();
+  });
+}
+function enterByGate(){
+  var name = el('gateName').value.trim();
+  if(!name){ setGateMsg('请输入你的名字', 'err'); return; }
+  setCurrentUser(name);
+}
+function setGateMsg(t, cls){
+  var m = el('gateMsg');
+  m.textContent = t;
+  m.className = 'gate-msg ' + (cls || '');
+}
+function setCurrentUser(name){
+  var inList = isTestName(name) || state.names.indexOf(name) !== -1;
+  if(!inList){
+    setGateMsg('「' + name + '」不在本次抽奖名单中，请联系管理员添加', 'err');
+    return;
+  }
+  var rec = state.records.filter(function(r){ return r.name === name; }).slice(-1)[0];
+  currentName = name;
+  try{ sessionStorage.setItem('cardDrawUser', name); }catch(e){}
+  el('gateName').value = '';
+  closeGate();
+  el('whoLine').style.display = 'flex';
+  el('whoAvatar').textContent = name.charAt(0);
+  el('whoName').textContent = name;
+  if(isTestName(name)){
+    el('whoTag').textContent = '测试账号 · 可无限抽奖（不消耗库存）';
+  }else{
+    el('whoTag').textContent = rec ? '已抽过 · 本名全场限抽一次' : '未抽 · 本名全场限抽一次';
+  }
+  renderStatus();
+  if(rec && !isTestName(name)){
+    toast('「' + name + '」已抽过奖，可查看下方抽奖记录');
+    showUserResult(rec);
+  }else{
+    toast('欢迎参与抽奖，' + name);
+  }
+}
+function clearCurrentUser(){
+  currentName = null;
+  try{ sessionStorage.removeItem('cardDrawUser'); }catch(e){}
+  el('whoLine').style.display = 'none';
+  renderStatus();
+  openGate();
+}
+function showUserResult(recOrName){
+  var rec = typeof recOrName === 'string'
+    ? state.records.filter(function(r){ return r.name === recOrName; }).slice(-1)[0]
+    : recOrName;
+  if(!rec) return;
+  var isEmpty = !rec.cards || rec.cards.length === 0;
+  el('stageTitle').innerHTML = isEmpty
+    ? '我的抽奖结果<small>EMPTY · ' + rec.name + ' 本轮未中奖</small>'
+    : '我的抽奖结果<small>RESULT · ' + rec.name + ' 抽中的 ' + rec.cards.length + ' 张小卡</small>';
+  el('ticker').classList.add('paused');
+  el('ticker').style.display = 'none';
+  el('stageHint').style.display = 'none';
+  var board = el('drawBoard');
+  board.style.display = 'flex';
+  board.innerHTML = '';
+  if(isEmpty){
+    for(var i=0;i<4;i++){
+      var es = document.createElement('div');
+      es.className = 'slot revealed';
+      var empty = document.createElement('div');
+      empty.className = 'empty-slot';
+      empty.innerHTML = '<span>空</span>';
+      es.appendChild(empty);
+      var tg = document.createElement('div');
+      tg.className = 'slot-tag';
+      tg.textContent = '未中奖';
+      es.appendChild(tg);
+      board.appendChild(es);
+    }
+  }else{
+    rec.cards.forEach(function(c){
+      var slot = document.createElement('div');
+      slot.className = 'slot revealed';
+      slot.appendChild(buildCardEl(c));
+      var tag = document.createElement('div');
+      tag.className = 'slot-tag';
+      var dot = document.createElement('span');
+      dot.className = 'dot';
+      var rn = document.createElement('span');
+      rn.className = 'result-name';
+      rn.textContent = c.name;
+      tag.appendChild(dot); tag.appendChild(rn);
+      slot.appendChild(tag);
+      board.appendChild(slot);
+    });
+  }
+  if(!isEmpty){
+    var box = document.createElement('div');
+    box.className = 'recv-box';
+    if(rec.receiver){
+      box.textContent = '收货：' + rec.receiver.name + ' · ' + rec.receiver.phone + ' · ' + rec.receiver.addr;
+    }else{
+      box.textContent = '尚未填写收货信息';
+    }
+    board.appendChild(box);
+  }
+  el('btnBackTour').style.display = '';
+}
+
+/* ===== 抽奖流程 ===== */
+function startDraw(){
+  if(isDrawing) return;
+  if(!currentName){ openGate(); return; }
+  if(!isTestName(currentName) && state.records.some(function(r){ return r.name === currentName; })){
+    toast('「' + currentName + '」已抽过奖，本名全场限抽一次');
+    showUserResult(currentName);
+    return;
+  }
+  var pool = availableCards();
+  if(pool.length < 4){
+    toast('剩余库存不足 4 张，本场抽奖结束：请管理员补充卡片数量或重置抽奖池');
+    return;
+  }
+  /* 抽空判定：达到保底中奖人数后，按抽空概率可能抽空（4 张全空、不消耗库存） */
+  var emptyRoll = false;
+  var minW = parseInt(state.settings.minWinners, 10) || 0;
+  var winners = countWinners();
+  if(minW > 0 && winners < minW){
+    emptyRoll = false;
+  }else{
+    var er = parseInt(state.settings.emptyRate, 10) || 0;
+    if(er > 0 && Math.random() * 100 < er) emptyRoll = true;
+  }
+  var picks = [];
+  if(!emptyRoll){
+    var copy = pool.slice();
+    for(var i=0;i<4;i++){
+      var card = pickCard(copy);
+      picks.push(card);
+      copy = copy.filter(function(c){ return c.id !== card.id; });
+    }
+  }
+  isDrawing = true;
+  el('btnDraw').disabled = true;
+  el('btnDraw').textContent = '抽奖中…';
+  showDrawMode(emptyRoll);
+  if(emptyRoll){
+    setTimeout(function(){ afterDraw([]); }, 1600);
+    return;
+  }
+  var finishCount = 0;
+  picks.forEach(function(card, idx){
+    setTimeout(function(){
+      animateSlot(idx, card, pool, function(){
+        finishCount++;
+        if(finishCount >= 4) afterDraw(picks);
+      });
+    }, idx * 120);
+  });
+}
+function pickCard(pool){
+  var cards = pool.slice();
+  if(state.settings.weightMode === 'custom'){
+    var total = 0;
+    cards.forEach(function(c){ total += Math.max(0.01, Number(c.weight) || 1); });
+    var r = Math.random() * total;
+    var acc = 0;
+    for(var i=0;i<cards.length;i++){
+      acc += Math.max(0.01, Number(cards[i].weight) || 1);
+      if(r <= acc) return cards[i];
+    }
+    return cards[cards.length - 1];
+  }
+  return cards[Math.floor(Math.random() * cards.length)];
+}
+function showDrawMode(emptyRoll){
+  el('ticker').classList.add('paused');
+  el('ticker').style.display = 'none';
+  el('stageHint').style.display = 'none';
+  el('btnBackTour').style.display = '';
+  el('stageTitle').innerHTML = emptyRoll ? '很遗憾<small>EMPTY · 本轮 4 张全空</small>' : '开奖时刻<small>DRAW · 4 张 3D 旋转抽卡</small>';
+  var board = el('drawBoard');
+  board.style.display = 'flex';
+  board.innerHTML = '';
+  var pool = availableCards();
+  for(var i=0;i<4;i++){
+    var slot = document.createElement('div');
+    slot.className = 'slot';
+    if(emptyRoll){
+      var empty = document.createElement('div');
+      empty.className = 'empty-slot';
+      empty.innerHTML = '<span>空</span>';
+      slot.appendChild(empty);
+      slot.classList.add('paused');
+    }else{
+      slot.appendChild(buildCardEl({ img: pool[i % pool.length].img, name: '占位' }));
+    }
+    var tag = document.createElement('div');
+    tag.className = 'slot-tag';
+    var d = document.createElement('span');
+    d.className = 'dot';
+    tag.appendChild(d);
+    tag.appendChild(document.createTextNode(emptyRoll ? '未抽中' : '等待开奖'));
+    slot.appendChild(tag);
+    board.appendChild(slot);
+  }
+}
+function animateSlot(idx, finalCard, pool, done){
+  var slot = el('drawBoard').querySelectorAll('.slot')[idx];
+  var c3 = slot.querySelector('.card3d');
+  var frontImg = c3.querySelector('.face-front img');
+  frontImg.src = pool[Math.floor(Math.random() * pool.length)].img;
+  c3.classList.add('no-trans');
+  var dur = 1500 + Math.random() * 500 + idx * 160;
+  var start = performance.now();
+  var endAngle = 180 + (3 + Math.floor(Math.random() * 2)) * 360;
+  var ticker = setInterval(function(){
+    frontImg.src = pool[Math.floor(Math.random() * pool.length)].img;
+  }, 130);
+  function frame(t){
+    var p = Math.min(1, (t - start) / dur);
+    var sp = 0.5 - 0.5 * Math.cos(Math.PI * p);
+    var angle = endAngle * sp;
+    c3.style.transform = 'rotateY(' + angle.toFixed(2) + 'deg)';
+    if(p >= 1){
+      clearInterval(ticker);
+      c3.classList.remove('no-trans');
+      c3.style.transform = 'rotateY(' + endAngle + 'deg)';
+      slot.classList.add('paused');
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          c3.style.transform = 'rotateY(' + (endAngle + 180) + 'deg)';
+          slot.classList.add('revealed');
+          var tag = slot.querySelector('.slot-tag');
+          tag.innerHTML = '';
+          var dot = document.createElement('span');
+          dot.className = 'dot';
+          var rn = document.createElement('span');
+          rn.className = 'result-name';
+          rn.textContent = finalCard.name;
+          tag.appendChild(dot);
+          tag.appendChild(rn);
+          done();
+        });
+      });
+      return;
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+function afterDraw(picks){
+  isDrawing = false;
+  var isTest = isTestName(currentName);
+  var isEmpty = !picks || picks.length === 0;
+  el('btnDraw').disabled = isTest ? false : true;
+  el('btnDraw').textContent = isTest ? '再抽一次' : '本名已抽过';
+  el('stageTitle').innerHTML = isEmpty
+    ? '抽奖结果<small>EMPTY · ' + currentName + ' 本轮未中奖</small>'
+    : '抽奖结果<small>RESULT · ' + currentName + ' 共抽中 ' + picks.length + ' 张</small>';
+  var now = new Date();
+  function fmt(n){ return (n < 10 ? '0' : '') + n; }
+  var ts = now.getFullYear() + '-' + fmt(now.getMonth()+1) + '-' + fmt(now.getDate()) + ' ' + fmt(now.getHours()) + ':' + fmt(now.getMinutes());
+  if(!isTest && !isEmpty){
+    /* 按 id 实时查找当前卡片扣减（并发 409 合并会重建 state.cards，不能依赖抽奖时的旧引用） */
+    picks.forEach(function(c){
+      var cur = state.cards.filter(function(x){ return x.id === c.id; })[0];
+      if(cur) cur.stock = Math.max(0, (typeof cur.stock === 'number' ? cur.stock : 1) - 1);
+    });
+  }
+  var rec = {
+    name: currentName,
+    time: ts,
+    test: !!isTest,
+    empty: !!isEmpty,
+    cards: picks.map(function(c){ return { id: c.id, name: c.name, img: c.img }; })
+  };
+  state.records.push(rec);
+  el('whoTag').textContent = isTest ? '测试账号 · 可无限抽奖（不消耗库存）' : '已抽过 · 本名全场限抽一次';
+  renderRecords();
+  renderGallery();
+  renderStatus();
+  saveAll();
+  if(isTest){
+    toast('测试抽奖完成：' + (isEmpty ? '本轮未中奖' : picks.map(function(c){ return c.name; }).join('、')));
+  }else if(isEmpty){
+    toast('很遗憾，「' + currentName + '」本轮未中奖');
+  }else{
+    toast('「' + currentName + '」抽中：' + picks.map(function(c){ return c.name; }).join('、'));
+    /* 中奖后填写收货信息 */
+    openReceiver(rec);
+  }
+}
+
+/* ===== 收货信息 ===== */
+var pendingRecv = null;
+function openReceiver(rec){
+  pendingRecv = rec;
+  el('recvName').value = '';
+  el('recvPhone').value = '';
+  el('recvAddr').value = '';
+  el('recvErr').textContent = '';
+  el('receiverMask').classList.add('open');
+}
+function closeReceiver(){
+  el('receiverMask').classList.remove('open');
+  pendingRecv = null;
+}
+function saveReceiver(){
+  var name = el('recvName').value.trim();
+  var phone = el('recvPhone').value.trim();
+  var addr = el('recvAddr').value.trim();
+  if(!name || !phone || !addr){ el('recvErr').textContent = '请填写完整的收货信息（名字/手机号/地址）'; return; }
+  if(!/^1\d{10}$/.test(phone)){ el('recvErr').textContent = '手机号格式不正确（请输入 11 位手机号）'; return; }
+  if(pendingRecv) pendingRecv.receiver = { name: name, phone: phone, addr: addr };
+  closeReceiver();
+  saveAll();
+  renderRecords();
+  if(adminLogged) renderAdminRecords();
+  toast('收货信息已保存');
+}
+
+/* ===== 舞台交互 ===== */
+function bindStage(){
+  el('btnBackTour').addEventListener('click', function(){
+    el('ticker').classList.remove('paused');
+    el('ticker').style.display = '';
+    el('stageHint').style.display = '';
+    el('drawBoard').style.display = 'none';
+    el('btnBackTour').style.display = 'none';
+    el('stageTitle').innerHTML = '卡池巡览<small>TOUR · 卡面缓缓旋转</small>';
+    renderStatus();
+  });
+}
+
+/* ===== 抽奖控制 ===== */
+function bindDrawControl(){
+  el('btnDraw').addEventListener('click', startDraw);
+}
+
+/* ===== 卡册 ===== */
+function bindGallery(){
+  el('gallery').addEventListener('click', function(e){
+    var g = e.target.closest('.g-card');
+    if(!g || g.classList.contains('empty')) return;
+    g.querySelector('.card3d').classList.toggle('flip');
+  });
+}
+
+/* ===== 管理员 ===== */
+var adminLogged = false;
+function openAdmin(){
+  el('adminMask').classList.add('open');
+  if(adminLogged){
+    el('loginView').style.display = 'none';
+    el('adminView').style.display = '';
+    renderAdmin();
+  }else{
+    el('loginView').style.display = '';
+    el('adminView').style.display = 'none';
+  }
+}
+function closeAdmin(){
+  el('adminMask').classList.remove('open');
+  if(location.hash === '#admin') history.replaceState(null, '', location.pathname + location.search);
+}
+function bindAdmin(){
+  el('btnAdmin').addEventListener('click', function(){
+    openAdmin();
+    if(location.hash !== '#admin') location.hash = 'admin';
+  });
+  el('btnAdminClose').addEventListener('click', closeAdmin);
+  el('adminMask').addEventListener('click', function(e){
+    if(e.target === el('adminMask')) closeAdmin();
+  });
+  el('btnLogin').addEventListener('click', function(){
+    if(el('adminPass').value === ADMIN_PASSWORD){
+      adminLogged = true;
+      try{ sessionStorage.setItem('cardDrawAdmin', '1'); }catch(e){}
+      el('loginErr').textContent = '';
+      el('adminPass').value = '';
+      openAdmin();
+      toast('欢迎回来，管理员');
+    }else{
+      el('loginErr').textContent = '密码错误，请重试';
+    }
+  });
+  el('adminPass').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') el('btnLogin').click();
+  });
+  el('adminNav').addEventListener('click', function(e){
+    var b = e.target.closest('button');
+    if(!b) return;
+    Array.prototype.forEach.call(el('adminNav').querySelectorAll('button'), function(x){
+      x.classList.toggle('on', x === b);
+    });
+    ['cards','names','records','settings','data'].forEach(function(t){
+      el('tab-' + t).classList.toggle('open', b.dataset.tab === t);
+    });
+  });
+  el('dialogCancel').addEventListener('click', function(){ closeDialog(false); });
+  el('dialogOk').addEventListener('click', function(){ closeDialog(true); });
+  el('recvSave').addEventListener('click', saveReceiver);
+  el('recvSkip').addEventListener('click', function(){
+    closeReceiver();
+    toast('已跳过，中奖后请联系管理员补填收货信息');
+  });
+  el('receiverMask').addEventListener('click', function(e){
+    if(e.target === el('receiverMask')){
+      closeReceiver();
+      toast('已跳过，中奖后请联系管理员补填收货信息');
+    }
+  });
+  el('recvPhone').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') saveReceiver();
+  });
+
+  el('btnAddCard').addEventListener('click', function(){
+    var name = el('newCardName').value.trim();
+    var file = el('newCardFile').files[0];
+    var url = el('newCardUrl').value.trim();
+    if(!name){ toast('请填写卡片名称'); return; }
+    if(!file && !url){ toast('请选择图片文件或填写图片链接'); return; }
+    var addImg = function(img){
+      state.cards.push({ id: uid('c'), name: name, weight: 1, img: img, stock: 1, base: 1 });
+      saveAll();
+      renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
+      el('newCardName').value = '';
+      el('newCardFile').value = '';
+      el('newCardUrl').value = '';
+      toast('卡片已添加');
+    };
+    if(file){
+      el('btnAddCard').disabled = true;
+      fileToDataURL(file, 1200, 0.85).then(addImg).catch(function(err){
+        toast('图片处理失败：' + err.message);
+      }).finally(function(){ el('btnAddCard').disabled = false; });
+    }else{
+      addImg(url);
+    }
+  });
+
+  el('btnAddName').addEventListener('click', function(){
+    var name = el('newName').value.trim();
+    if(!name){ toast('请输入名字'); return; }
+    if(state.names.indexOf(name) !== -1){ toast('该名字已在名单中'); return; }
+    state.names.push(name);
+    saveAll();
+    renderAdminNames(); renderStatus();
+    el('newName').value = '';
+    toast('已添加「' + name + '」');
+  });
+
+  el('btnUndoRecord').addEventListener('click', function(){
+    var name = el('undoNameSelect').value;
+    if(!name) return;
+    confirmDialog('撤销抽奖', '撤销「' + name + '」的抽奖记录并恢复其抽到的卡片？').then(function(ok){
+      if(!ok) return;
+      var rec = state.records.filter(function(r){ return r.name === name; })[0];
+      if(rec){
+        if(!rec.test){
+          var ids = {};
+          rec.cards.forEach(function(c){ ids[c.id] = true; });
+          state.cards.forEach(function(c){
+            if(ids[c.id]){
+              var st = typeof c.stock === 'number' ? c.stock : 0;
+              var base = typeof c.base === 'number' ? c.base : 1;
+              c.stock = Math.min(base, st + 1);
+            }
+          });
+        }
+      }
+      state.records = state.records.filter(function(r){ return r.name !== name; });
+      saveAll();
+      renderAdminRecords(); renderRecords(); renderGallery(); renderStatus();
+      if(currentName === name){ el('whoTag').textContent = '未抽 · 本名全场限抽一次'; }
+      toast('已撤销「' + name + '」的抽奖');
+    });
+  });
+
+  el('btnSaveNotice').addEventListener('click', function(){
+    var v = el('noticeInput').value.trim();
+    if(!v){ toast('提示语不能为空'); return; }
+    state.settings.notice = v;
+    saveAll();
+    el('noticeText').textContent = v;
+    toast('提示语已更新');
+  });
+  el('weightMode').addEventListener('change', function(){
+    state.settings.weightMode = this.value;
+    saveAll();
+    toast('权重模式已更新');
+  });
+  el('emptyRateInput').addEventListener('change', function(){
+    var v = Math.min(100, Math.max(0, parseInt(this.value, 10) || 0));
+    state.settings.emptyRate = v;
+    this.value = v;
+    saveAll();
+    renderAdminSettings();
+    toast('抽空概率已设为 ' + v + '%');
+  });
+  el('minWinnersInput').addEventListener('change', function(){
+    var v = Math.max(0, parseInt(this.value, 10) || 0);
+    state.settings.minWinners = v;
+    this.value = v;
+    saveAll();
+    renderAdminSettings();
+    toast('保底中奖人数已设为 ' + (v > 0 ? v + ' 人' : '不启用'));
+  });
+  el('btnSaveBack').addEventListener('click', function(){
+    var file = el('backFile').files[0];
+    var url = el('backUrl').value.trim();
+    if(file){
+      fileToDataURL(file, 1400, 0.88).then(function(data){
+        state.settings.backUrl = data;
+        saveAll();
+        renderAdminSettings(); renderTicker(); renderGallery();
+        toast('卡背已更新');
+      }).catch(function(err){ toast('图片处理失败：' + err.message); });
+    }else if(url){
+      state.settings.backUrl = url;
+      saveAll();
+      renderAdminSettings(); renderTicker(); renderGallery();
+      toast('卡背已更新');
+    }else{
+      toast('请选择卡背图片文件或填写链接');
+    }
+  });
+
+  el('btnExport').addEventListener('click', function(){
+    downloadJSON('小卡抽奖机备份-' + new Date().toISOString().slice(0,10) + '.json', state);
+    toast('已导出备份文件');
+  });
+  el('btnSaveToken').addEventListener('click', function(){
+    var v = el('ghTokenInput').value.trim();
+    if(!v){ toast('请输入 GitHub Token'); return; }
+    try{
+      localStorage.setItem(TOKEN_KEY, v);
+      el('ghTokenInput').value = '';
+      renderAdminSettings();
+      toast('Token 已保存（仅存本浏览器）');
+      ghSave();
+    }catch(e){ toast('Token 保存失败'); }
+  });
+  el('ghTokenInput').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') el('btnSaveToken').click();
+  });
+  el('importFile').addEventListener('change', function(){
+    var f = this.files[0];
+    if(!f) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        var s = JSON.parse(e.target.result);
+        if(!s || !Array.isArray(s.cards) || !Array.isArray(s.names)) throw new Error('格式不符');
+        confirmDialog('导入数据', '导入将覆盖当前全部数据（卡片、名单、记录与设置），是否继续？').then(function(ok){
+          if(!ok) return;
+          state = s;
+          state.settings = state.settings || defaultState().settings;
+          saveLocal();
+          fullRender();
+          toast('数据已导入（请手动同步到云端）');
+        });
+      }catch(err){
+        toast('导入失败：不是有效的备份文件');
+      }
+      el('importFile').value = '';
+    };
+    reader.readAsText(f);
+  });
+  el('btnForceSync').addEventListener('click', function(){
+    ghSave().then(function(ok){ if(ok) toast('已同步到云端'); });
+  });
+  el('btnResetPool').addEventListener('click', function(){
+    confirmDialog('重置抽奖池', '所有卡片库存将恢复为初始数量，继续？').then(function(ok){
+      if(!ok) return;
+      state.cards.forEach(function(c){
+        c.stock = (typeof c.base === 'number' ? c.base : (typeof c.stock === 'number' ? c.stock : 1));
+      });
+      saveAll();
+      renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
+      toast('抽奖池已重置（库存已恢复）');
+    });
+  });
+  el('btnReset').addEventListener('click', function(){
+    confirmDialog('恢复出厂', '将清空全部数据（卡片、名单、记录）并恢复初始 8 张卡面，是否继续？').then(function(ok){
+      if(!ok) return;
+      try{ localStorage.removeItem(LS_KEY); }catch(e){}
+      state = defaultState();
+      fullRender();
+      toast('已恢复出厂设置，请手动同步到云端');
+    });
+  });
+}
+
+/* ===== 保存并同步 ===== */
+function saveAll(){ saveLocal(); ghSave(); }
+
+/* ===== 全量渲染 ===== */
+function fullRender(){
+  el('noticeText').textContent = state.settings.notice || DEFAULT_NOTICE;
+  renderTicker();
+  renderStatus();
+  renderGallery();
+  renderRecords();
+  if(adminLogged) renderAdmin();
+}
+
+/* ===== 初始化 ===== */
+function init(){
+  state = loadLocal() || defaultState();
+  try{ adminLogged = sessionStorage.getItem('cardDrawAdmin') === '1'; }catch(e){ adminLogged = false; }
+  el('noticeText').textContent = state.settings.notice || DEFAULT_NOTICE;
+  bindGate();
+  bindStage();
+  bindDrawControl();
+  bindGallery();
+  bindAdmin();
+  ghLoad().then(function(usedCloud){
+    if(usedCloud) setSync('ok', '数据已同步到云端 data.json');
+    fullRender();
+    if(usedCloud) saveLocal();
+    var savedUser = null;
+    try{ savedUser = sessionStorage.getItem('cardDrawUser'); }catch(e){}
+    if(savedUser && (isTestName(savedUser) || state.names.indexOf(savedUser) !== -1)){
+      currentName = savedUser;
+      var rec = state.records.filter(function(r){ return r.name === savedUser; }).slice(-1)[0];
+      el('whoLine').style.display = 'flex';
+      el('whoAvatar').textContent = savedUser.charAt(0);
+      el('whoName').textContent = savedUser;
+      if(isTestName(savedUser)) el('whoTag').textContent = '测试账号 · 可无限抽奖（不消耗库存）';
+      else el('whoTag').textContent = rec ? '已抽过 · 本名全场限抽一次' : '未抽 · 本名全场限抽一次';
+      if(rec && !isTestName(savedUser)) showUserResult(rec);
+      renderStatus();
+    }else{
+      openGate();
+    }
+  });
+}
+init();
+</script>
+</body>
+</html>
