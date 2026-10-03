@@ -680,13 +680,23 @@ input,select,textarea{ font-family:inherit; }
       </div>
       <div class="adm-section" id="tab-data">
         <div class="adm-sec-title">云端数据</div>
-        <p style="color:var(--text-dim);font-size:13px;margin-bottom:10px">抽奖记录与吧唧数据会同步到仓库目录下的 data.json。同步需要 GitHub Token；Token 未配置时记录自动保存在本地，可随时一键同步。</p>
-        <div class="adm-sec-title">GitHub Token（同步用）</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:10px">抽奖记录与吧唧数据会同步到云端。同步优先走 Gitee 码云（国内可达，速度快），未配置 Gitee 时使用 GitHub；任一通道成功即视为已同步。同步需要对应的 Token。</p>
+        <div class="adm-sec-title">Gitee 码云同步（国内加速，推荐）</div>
+        <div class="form-hint">国内访问 GitHub 接口不稳定时，配置 Gitee 可稳定同步：注册码云 gitee.com → 新建一个公开仓库（任意名称）→ 在「设置 → 安全设置 → 私人令牌」生成令牌（勾选 projects）→ 填入下面三项。保存后自动优先走 Gitee，首次同步会自动创建数据文件。</div>
+        <div class="form-row">
+          <input type="text" id="giteeOwnerInput" placeholder="Gitee 用户名" autocomplete="off">
+          <input type="text" id="giteeRepoInput" placeholder="Gitee 仓库名" autocomplete="off">
+        </div>
+        <div class="form-row">
+          <input type="password" id="giteeTokenInput" placeholder="Gitee 私人令牌" autocomplete="off">
+          <button id="btnSaveGitee" class="btn" type="button">保存 Gitee 配置</button>
+        </div>
+        <div class="adm-sec-title">GitHub Token（备用同步）</div>
         <div class="form-row">
           <input type="password" id="ghTokenInput" placeholder="ghp_ 开头的 GitHub Token" autocomplete="off">
           <button id="btnSaveToken" class="btn" type="button">保存 Token</button>
         </div>
-        <div class="form-hint">Token 仅保存在当前浏览器的本地存储中，不会写入页面代码与 data.json。页面公开后切勿让 Token 泄露；若担心安全，活动结束后可撤销该 Token。</div>
+        <div class="form-hint">Token 仅保存在当前浏览器的本地存储中，不会写入页面代码与数据文件。页面公开后切勿让 Token 泄露；若担心安全，活动结束后可撤销该 Token。</div>
         <button id="btnForceSync" class="btn" type="button">立即同步到云端</button>
         <div class="adm-sec-title">导出备份</div>
         <button id="btnExport" class="btn" type="button">导出数据（JSON）</button>
@@ -771,6 +781,9 @@ var GH_OWNER = 'JUDIAO417';
 var GH_REPO = 'xiaoka-choujiang';
 var GH_PATH = 'badge-data.json';
 var TOKEN_KEY = 'cardDrawGitHubToken';
+var GITEE_OWNER_KEY = 'badgeGiteeOwner';
+var GITEE_REPO_KEY = 'badgeGiteeRepo';
+var GITEE_TOKEN_KEY = 'badgeGiteeToken';
 var LS_KEY = 'badgeDrawData_v3';
 var TEST_NAME = '1433223';
 var DEFAULT_STOCK = 3;
@@ -912,7 +925,44 @@ function ghHeaders(token){
   if(token) h['Authorization'] = 'Bearer ' + token;
   return h;
 }
+function giteeConfig(){
+  try{
+    var owner = localStorage.getItem(GITEE_OWNER_KEY);
+    var repo = localStorage.getItem(GITEE_REPO_KEY);
+    var token = localStorage.getItem(GITEE_TOKEN_KEY);
+    if(owner && repo && token) return { owner: owner, repo: repo, token: token };
+  }catch(e){}
+  return null;
+}
+function applyCloudState(s, sha){
+  migrateState(s);
+  /* 合并 ghLoad 完成前本地已产生的增量（管理员加名、本地新增记录）；清除记录后旧的本地记录不复活 */
+  var mine = state;
+  var purgedAt = s.settings && s.settings.purgedAt;
+  var cloudNames = s.names.slice();
+  mine.names.forEach(function(n){ if(cloudNames.indexOf(n) === -1) cloudNames.push(n); });
+  s.names = cloudNames;
+  mine.records.forEach(function(r){
+    if(purgedAt && (!r.ts || r.ts < purgedAt)) return;
+    var dup = s.records.some(function(x){ return x.name === r.name && x.time === r.time; });
+    if(!dup) s.records.push(r);
+  });
+  state = s;
+  state.settings = state.settings || defaultState().settings;
+  if(sha) syncState.lastSha = sha;
+  return true;
+}
 function ghLoad(){
+  var cfg = giteeConfig();
+  if(cfg){
+    return giteeLoad().catch(function(err){
+      setSync('bad', 'Gitee 读取失败（' + err.message + '），尝试 GitHub…');
+      return ghLoadGitHub();
+    });
+  }
+  return ghLoadGitHub();
+}
+function ghLoadGitHub(){
   setSync('loading', '数据连接中…');
   /* 直读 GitHub Contents API：实时最新、无 CDN 缓存延迟；带 token 时配额 5000 次/时 */
   return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, { headers: ghHeaders(ghToken()) })
@@ -923,21 +973,8 @@ function ghLoad(){
     .then(function(j){
       var s = JSON.parse(decodeURIComponent(escape(atob(j.content))));
       if(s && Array.isArray(s.cards) && Array.isArray(s.names)){
-        migrateState(s);
-        /* 合并 ghLoad 完成前本地已产生的增量（管理员加名、本地新增记录）；清除记录后旧的本地记录不复活 */
-        var mine = state;
-        var purgedAt = s.settings && s.settings.purgedAt;
-        var cloudNames = s.names.slice();
-        mine.names.forEach(function(n){ if(cloudNames.indexOf(n) === -1) cloudNames.push(n); });
-        s.names = cloudNames;
-        mine.records.forEach(function(r){
-          if(purgedAt && (!r.ts || r.ts < purgedAt)) return;
-          var dup = s.records.some(function(x){ return x.name === r.name && x.time === r.time; });
-          if(!dup) s.records.push(r);
-        });
-        state = s;
-        state.settings = state.settings || defaultState().settings;
-        if(j && j.sha) syncState.lastSha = j.sha;
+        applyCloudState(s, j.sha);
+        setSync('ok', '数据已从云端加载（GitHub）');
         return true;
       }
       throw new Error('data.json 格式不符');
@@ -950,7 +987,32 @@ function ghLoad(){
       return false;
     });
 }
-function ghSave(attempt){
+function giteeLoad(){
+  var cfg = giteeConfig();
+  if(!cfg) return Promise.resolve(false);
+  setSync('loading', '数据连接中…');
+  return fetch('https://gitee.com/api/v5/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + GH_PATH + '?access_token=' + encodeURIComponent(cfg.token), { headers: { 'Accept': 'application/json' } })
+    .then(function(res){
+      if(res.status === 404){
+        var local = loadLocal();
+        state = local || defaultState();
+        setSync('ok', 'Gitee 数据尚未初始化，已使用本地数据（首次保存时自动创建）');
+        return true;
+      }
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(j){
+      if(j === true) return true;
+      if(!j || !j.content) throw new Error('远端数据不存在');
+      var s = JSON.parse(decodeURIComponent(escape(atob(j.content))));
+      if(!s || !Array.isArray(s.cards) || !Array.isArray(s.names)) throw new Error('数据格式不符');
+      applyCloudState(s, j.sha || null);
+      setSync('ok', '数据已从云端加载（Gitee 码云）');
+      return true;
+    });
+}
+function ghSaveGitHub(attempt){
   var attempt = attempt || 0;
   var token = ghToken();
   if(!token){
@@ -1006,7 +1068,7 @@ function ghSave(attempt){
         _syncRetrying = true;
         showSyncOverlay('云端连接不稳定，正在自动重试（' + (attempt + 1) + '/4）…');
         setSync('loading', '云端连接不稳定，正在自动重试…');
-        setTimeout(function(){ _syncRetrying = false; ghSave(attempt + 1); }, 5000);
+        setTimeout(function(){ _syncRetrying = false; ghSaveGitHub(attempt + 1); }, 5000);
       }
       else setSync('bad', '云端同步失败，数据已暂存本地（' + m + '）');
       saveLocal();
@@ -1609,6 +1671,10 @@ function renderAdminSettings(){
   el('noticeInput').value = state.settings.notice || '';
   el('ghTokenInput').value = ghToken();
   el('ghTokenInput').placeholder = ghToken() ? 'Token 已配置（已隐藏）' : 'ghp_ 开头的 GitHub Token';
+  var gc = giteeConfig();
+  el('giteeOwnerInput').value = gc ? gc.owner : '';
+  el('giteeRepoInput').value = gc ? gc.repo : '';
+  el('giteeTokenInput').value = gc ? gc.token : '';
   el('emptyRateInput').value = state.settings.emptyRate;
   el('minWinnersInput').value = state.settings.minWinners;
   el('lockedInput').checked = !!state.settings.locked;
@@ -2228,6 +2294,22 @@ function bindAdmin(){
     downloadJSON('吧唧抽奖机备份-' + new Date().toISOString().slice(0,10) + '.json', state);
     toast('已导出备份文件');
   });
+  el('btnSaveGitee').addEventListener('click', function(){
+    var owner = el('giteeOwnerInput').value.trim();
+    var repo = el('giteeRepoInput').value.trim();
+    var token = el('giteeTokenInput').value.trim();
+    if(!owner || !repo || !token){ toast('请完整填写 Gitee 用户名、仓库名和私人令牌'); return; }
+    try{
+      localStorage.setItem(GITEE_OWNER_KEY, owner);
+      localStorage.setItem(GITEE_REPO_KEY, repo);
+      localStorage.setItem(GITEE_TOKEN_KEY, token);
+      renderAdminSettings();
+      toast('Gitee 配置已保存，正在同步…');
+      saveAll().then(function(ok){
+        if(ok) toast('已通过 Gitee 同步到云端');
+      });
+    }catch(e){ toast('保存失败'); }
+  });
   el('btnSaveToken').addEventListener('click', function(){
     var v = el('ghTokenInput').value.trim();
     if(!v){ toast('请输入 GitHub Token'); return; }
@@ -2236,7 +2318,7 @@ function bindAdmin(){
       el('ghTokenInput').value = '';
       renderAdminSettings();
       toast('Token 已保存（仅存本浏览器）');
-      ghSave();
+      saveAll();
     }catch(e){ toast('Token 保存失败'); }
   });
   el('ghTokenInput').addEventListener('keydown', function(e){
@@ -2266,7 +2348,7 @@ function bindAdmin(){
     reader.readAsText(f);
   });
   el('btnForceSync').addEventListener('click', function(){
-    ghSave().then(function(ok){ if(ok) toast('已同步到云端'); });
+    saveAll().then(function(ok){ if(ok) toast('已同步到云端'); });
   });
   el('btnResetPool').addEventListener('click', function(){
     confirmDialog('重置抽奖池', '所有吧唧库存将恢复为初始数量，继续？').then(function(ok){
@@ -2304,8 +2386,91 @@ function bindAdmin(){
   });
 }
 
-/* ===== 保存并同步 ===== */
-function saveAll(){ saveLocal(); ghSave(); }
+/* ===== 保存并同步（Gitee 优先，GitHub 兜底） ===== */
+function saveAll(){
+  saveLocal();
+  var cfg = giteeConfig();
+  if(cfg){
+    return giteeSave(0).then(function(ok){ return ok ? ok : ghSaveGitHub(0); });
+  }
+  return ghSaveGitHub(0);
+}
+function giteeSave(attempt){
+  var attempt = attempt || 0;
+  var cfg = giteeConfig();
+  if(!cfg) return Promise.resolve(false);
+  setSync('loading', '正在同步到云端…');
+  showSyncOverlay('正在同步到云端…');
+  var GU = 'https://gitee.com/api/v5/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + GH_PATH + '?access_token=' + encodeURIComponent(cfg.token);
+  var purge = !!state._purgeRecords;
+  state._purgeRecords = false;
+  return fetch(GU, { headers: { 'Accept': 'application/json' } })
+    .then(function(r2){
+      if(r2.status === 404){
+        /* 仓库里还没有数据文件：自动初始化创建 */
+        return { notFound: true };
+      }
+      if(!r2.ok) throw new Error('HTTP ' + r2.status);
+      return r2.json();
+    })
+    .then(function(j2){
+      var remote;
+      var oldSha = null;
+      if(j2.notFound){
+        remote = defaultState();
+      }else{
+        if(!j2 || !j2.content) throw new Error('远端读取异常');
+        oldSha = j2.sha || null;
+        remote = JSON.parse(decodeURIComponent(escape(atob(j2.content))));
+        if(!remote || !Array.isArray(remote.cards) || !Array.isArray(remote.names)) throw new Error('远端数据格式不符');
+      }
+      if(purge) remote.records = [];
+      mergeRemote(remote);
+      var payload = JSON.stringify(state, null, 2);
+      var body = { content: btoa(unescape(encodeURIComponent(payload))), message: 'update badge-data.json (merge-first)' };
+      if(oldSha) body.sha = oldSha;
+      return fetch(GU, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    })
+    .then(function(res){
+      if(res && res.status === 409 && attempt < 2){
+        _syncRetrying = true;
+        showSyncOverlay('云端冲突，正在合并重试…');
+        setSync('loading', '云端冲突，正在合并重试…');
+        setTimeout(function(){ _syncRetrying = false; giteeSave(attempt + 1); }, 2000);
+        return { pendingRetry: true };
+      }
+      if(res && !res.ok) throw new Error('HTTP ' + res.status);
+      if(res && res.pendingRetry) return res;
+      return res.json().catch(function(){ return {}; });
+    })
+    .then(function(j){
+      if(j && j.pendingRetry) return false;
+      var sha = j && j.content && j.content.sha ? j.content.sha : (j && j.sha);
+      if(sha) syncState.lastSha = sha;
+      setSync('ok', '数据已同步到云端（Gitee 码云）');
+      saveLocal();
+      return true;
+    }).catch(function(err){
+      var m = String(err && err.message ? err.message : err);
+      var retryable = /failed to fetch|network|timeout|abort|socket|ETIMEDOUT|ENOTFOUND|HTTP 5\d\d/i.test(m);
+      if(/429|403/.test(m)) setSync('bad', '云端同步被限流（Gitee 请求配额已满），数据已暂存本地，请稍后点击「立即同步」重试');
+      else if(retryable && attempt < 4){
+        _syncRetrying = true;
+        showSyncOverlay('云端连接不稳定，正在自动重试（' + (attempt + 1) + '/4）…');
+        setSync('loading', '云端连接不稳定，正在自动重试…');
+        setTimeout(function(){ _syncRetrying = false; giteeSave(attempt + 1); }, 5000);
+      }
+      else setSync('bad', '云端同步失败，数据已暂存本地（' + m + '）');
+      saveLocal();
+      return false;
+    }).finally(function(){
+      if(!_syncRetrying) hideSyncOverlay();
+    });
+}
 
 /* ===== 全量渲染 ===== */
 function fullRender(){
