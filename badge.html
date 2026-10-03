@@ -680,9 +680,9 @@ input,select,textarea{ font-family:inherit; }
       </div>
       <div class="adm-section" id="tab-data">
         <div class="adm-sec-title">云端数据</div>
-        <p style="color:var(--text-dim);font-size:13px;margin-bottom:10px">抽奖记录与吧唧数据会同步到云端。同步优先走 Gitee 码云（国内可达，速度快），未配置 Gitee 时使用 GitHub；任一通道成功即视为已同步。同步需要对应的 Token。</p>
-        <div class="adm-sec-title">Gitee 码云同步（国内加速，推荐）</div>
-        <div class="form-hint">国内访问 GitHub 接口不稳定时，配置 Gitee 可稳定同步：注册码云 gitee.com → 新建一个公开仓库（任意名称）→ 在「设置 → 安全设置 → 私人令牌」生成令牌（勾选 projects）→ 填入下面三项。保存后自动优先走 Gitee，首次同步会自动创建数据文件。</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:10px">抽奖记录与吧唧数据同步到 Gitee 码云（国内可达）。只有配置了下方 Gitee 项才会上传云端；未配置时仅在浏览器本地保存，不会使用 GitHub 同步。</p>
+        <div class="adm-sec-title">Gitee 码云同步（唯一云端通道）</div>
+        <div class="form-hint">抽奖者都在国内时，使用 Gitee 同步最稳定：注册码云 gitee.com → 新建一个公开仓库（任意名称）→ 在「设置 → 安全设置 → 私人令牌」生成令牌（勾选 projects）→ 填入下面三项。保存后同步只走 Gitee，首次同步会自动创建数据文件。</div>
         <div class="form-row">
           <input type="text" id="giteeOwnerInput" placeholder="Gitee 用户名" autocomplete="off">
           <input type="text" id="giteeRepoInput" placeholder="Gitee 仓库名" autocomplete="off">
@@ -691,12 +691,12 @@ input,select,textarea{ font-family:inherit; }
           <input type="password" id="giteeTokenInput" placeholder="Gitee 私人令牌" autocomplete="off">
           <button id="btnSaveGitee" class="btn" type="button">保存 Gitee 配置</button>
         </div>
-        <div class="adm-sec-title">GitHub Token（备用同步）</div>
+        <div class="adm-sec-title">GitHub Token（仅未配置 Gitee 时的本地备用）</div>
         <div class="form-row">
           <input type="password" id="ghTokenInput" placeholder="ghp_ 开头的 GitHub Token" autocomplete="off">
           <button id="btnSaveToken" class="btn" type="button">保存 Token</button>
         </div>
-        <div class="form-hint">Token 仅保存在当前浏览器的本地存储中，不会写入页面代码与数据文件。页面公开后切勿让 Token 泄露；若担心安全，活动结束后可撤销该 Token。</div>
+        <div class="form-hint">已配置 Gitee 时，数据只同步到 Gitee，不会使用 GitHub。此 Token 仅在未配置 Gitee 的情况下作为备用。</div>
         <button id="btnForceSync" class="btn" type="button">立即同步到云端</button>
         <div class="adm-sec-title">导出备份</div>
         <button id="btnExport" class="btn" type="button">导出数据（JSON）</button>
@@ -2398,12 +2398,12 @@ function bindAdmin(){
   });
 }
 
-/* ===== 保存并同步（Gitee 优先，GitHub 兜底） ===== */
+/* ===== 保存并同步（只走 Gitee；未配置 Gitee 时才用 GitHub 兜底） ===== */
 function saveAll(){
   saveLocal();
   var cfg = giteeConfig();
   if(cfg){
-    return giteeSave(0).then(function(ok){ return ok ? ok : ghSaveGitHub(0); });
+    return giteeSave(0);
   }
   return ghSaveGitHub(0);
 }
