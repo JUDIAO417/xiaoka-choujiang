@@ -119,7 +119,5 @@
   },
   "version": 4,
   "_purgeRecords": false,
-  "_stockOverrideIds": {
-    "b05": true
-  }
+  "_stockOverrideIds": {}
 }
