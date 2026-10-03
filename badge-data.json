@@ -109,7 +109,9 @@
     "emptyRate": 0,
     "minWinners": 0,
     "locked": false,
-    "displayOnlyGroups": [],
+    "displayOnlyGroups": [
+      "默认"
+    ],
     "extraGroups": [
       "测试"
     ],
