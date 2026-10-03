@@ -1223,7 +1223,7 @@ function renderStatus(){
   var doneCount = doneNames.length;
   var leftNames = state.names.length - doneCount;
   var userDrawn = currentName && !isTestName(currentName) && state.records.some(function(r){ return r.name === currentName; });
-  var userWon = currentName && !isTestName(currentName) && state.records.some(function(r){ return r.name === currentName && r.cards && r.cards.length > 0; });
+  var userWon = currentName && state.records.some(function(r){ return r.name === currentName && r.cards && r.cards.length > 0; });
   el('statusNote').textContent = '剩余总库存 ' + totalStock() + ' 张 · 可抽吧唧 ' + pool.length + ' 种 · 每次抽出 4 张（同轮不重复，吧唧种类不足时自动补足）';
   el('statusPill').textContent = '参与者 ' + state.names.length + ' 人 · 已抽 ' + doneCount + ' 人 · 未抽 ' + Math.max(0, leftNames) + ' 人';
   el('btnFillInfo').style.display = userWon ? '' : 'none';
@@ -2051,13 +2051,11 @@ function afterDraw(picks){
   renderGallery();
   renderStatus();
   saveAll();
-  if(isTest){
-    toast('测试抽奖完成：' + (isEmpty ? '本轮未中奖' : picks.map(function(c){ return c.name; }).join('、')));
-  }else if(isEmpty){
-    toast('很遗憾，「' + currentName + '」本轮未中奖');
+  if(isEmpty){
+    toast(isTest ? '测试抽奖完成：本轮未中奖' : '很遗憾，「' + currentName + '」本轮未中奖');
   }else{
     toast('「' + currentName + '」抽中：' + picks.map(function(c){ return c.name; }).join('、'));
-    /* 中奖后填写收货信息 */
+    /* 中奖后填写收货信息（测试账号同样弹出，可点「暂不填写」跳过） */
     openReceiver(rec);
   }
 }
