@@ -4,7 +4,7 @@
       "id": "b01",
       "name": "吧唧 01",
       "img": "assets/badge-01.png",
-      "stock": 10,
+      "stock": 6,
       "base": 10,
       "drawn": false
     },
@@ -42,7 +42,37 @@
     }
   ],
   "names": [],
-  "records": [],
+  "records": [
+    {
+      "name": "1433223",
+      "time": "2026-10-03 09:52",
+      "ts": 1790992374155,
+      "test": true,
+      "empty": false,
+      "cards": [
+        {
+          "id": "b01",
+          "name": "吧唧 01",
+          "img": "assets/badge-01.png"
+        },
+        {
+          "id": "b01",
+          "name": "吧唧 01",
+          "img": "assets/badge-01.png"
+        },
+        {
+          "id": "b01",
+          "name": "吧唧 01",
+          "img": "assets/badge-01.png"
+        },
+        {
+          "id": "b01",
+          "name": "吧唧 01",
+          "img": "assets/badge-01.png"
+        }
+      ]
+    }
+  ],
   "settings": {
     "weightMode": "equal",
     "backUrl": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh",
