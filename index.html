@@ -2643,7 +2643,6 @@ function init(){
   bindGallery();
   bindAdmin();
   ghLoad().then(function(usedCloud){
-    if(usedCloud) setSync('ok', '数据已同步到云端 data.json');
     fullRender();
     if(usedCloud) saveLocal();
     var savedUser = null;
