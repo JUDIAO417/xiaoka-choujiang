@@ -2494,8 +2494,9 @@ function giteeSave(attempt){
       var payload = JSON.stringify(state, null, 2);
       var body = { content: btoa(unescape(encodeURIComponent(payload))), message: 'update badge-data.json (merge-first)' };
       if(oldSha) body.sha = oldSha;
+      /* Gitee：文件已存在（更新）必须用 PUT，首次创建（文件不存在）用 POST */
       return fetch(GU, {
-        method: 'POST',
+        method: oldSha ? 'PUT' : 'POST',
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
