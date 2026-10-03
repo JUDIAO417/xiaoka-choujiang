@@ -1056,6 +1056,7 @@ function ghSaveGitHub(attempt){
     .then(function(j){
       if(!j || !j.content || !j.content.sha) throw new Error('同步响应异常');
       syncState.lastSha = j.content.sha;
+      state._stockOverrideIds = {};
       setSync('ok', '数据已同步到云端 badge-data.json');
       saveLocal();
       return true;
@@ -1112,7 +1113,15 @@ function mergeRemote(remote){
   });
   state.cards = remote.cards.map(function(c){
     var mine = state.cards.filter(function(x){ return x.id === c.id; })[0];
-    return Object.assign({}, c, { stock: (mine && typeof mine.stock === 'number') ? Math.min(mine.stock, c.stock) : c.stock });
+    var ov = state._stockOverrideIds && state._stockOverrideIds[c.id];
+    /* 管理员手动设置过该卡数量 → 以本地新值为准；否则库存取双方较小值（防并发把已抽走的库存恢复） */
+    var newStock = c.stock;
+    if(mine && typeof mine.stock === 'number'){
+      newStock = ov ? mine.stock : Math.min(mine.stock, c.stock);
+    }
+    var out = Object.assign({}, c, { stock: newStock });
+    if(ov && mine && typeof mine.base === 'number') out.base = mine.base;
+    return out;
   });
   /* 名单取并集：避免并发把管理员新加的名字清掉 */
   var mineNames = state.names.slice();
@@ -1487,6 +1496,9 @@ function renderAdminCards(){
     q.addEventListener('change', function(){
       var v = Math.max(0, parseInt(q.value, 10) || 0);
       card.stock = v; card.base = v;
+      /* 标记本次为管理员手动设置：云端合并时以本地新值为准，避免被「库存只减不增」逻辑砍回旧值 */
+      state._stockOverrideIds = state._stockOverrideIds || {};
+      state._stockOverrideIds[card.id] = true;
       saveAll();
       renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
       toast('已更新库存');
@@ -2451,6 +2463,7 @@ function giteeSave(attempt){
       if(j && j.pendingRetry) return false;
       var sha = j && j.content && j.content.sha ? j.content.sha : (j && j.sha);
       if(sha) syncState.lastSha = sha;
+      state._stockOverrideIds = {};
       setSync('ok', '数据已同步到云端（Gitee 码云）');
       saveLocal();
       return true;
