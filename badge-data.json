@@ -50,7 +50,9 @@
     "emptyRate": 0,
     "minWinners": 0,
     "locked": false,
-    "displayOnlyGroups": [],
+    "displayOnlyGroups": [
+      "默认"
+    ],
     "purgedAt": 1790988098447
   },
   "version": 4,
