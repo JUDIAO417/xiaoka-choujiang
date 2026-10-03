@@ -938,7 +938,16 @@ function applyCloudState(s, sha){
   migrateState(s);
   /* 合并 ghLoad 完成前本地已产生的增量（管理员加名、本地新增记录）；清除记录后旧的本地记录不复活 */
   var mine = state;
-  var purgedAt = s.settings && s.settings.purgedAt;
+  /* purgedAt 取「本地与云端较新值」：即使本机清除记录还没同步到云端，也能过滤掉清除前的旧记录 */
+  var purgedAt = Math.max(
+    (s.settings && s.settings.purgedAt) || 0,
+    (mine.settings && mine.settings.purgedAt) || 0
+  ) || null;
+  if(purgedAt) s.settings.purgedAt = purgedAt;
+  /* 云端若还是清除前的旧数据（ts 早于清除时刻），一并过滤，避免旧记录被拉回 */
+  if(purgedAt){
+    s.records = s.records.filter(function(r){ return !(r.ts && r.ts < purgedAt); });
+  }
   var cloudNames = s.names.slice();
   mine.names.forEach(function(n){ if(cloudNames.indexOf(n) === -1) cloudNames.push(n); });
   s.names = cloudNames;
@@ -1104,6 +1113,11 @@ function retryMerge(token, GH_URL, triesLeft){
 }
 function mergeRemote(remote){
   var remoteMap = {};
+  /* 清除记录后：远端若仍是清除前的旧记录（ts 早于清除时刻），先过滤，避免被合并回本地 */
+  var purgedAt = (state.settings && state.settings.purgedAt) || 0;
+  if(purgedAt){
+    remote.records = remote.records.filter(function(r){ return !(r.ts && r.ts < purgedAt); });
+  }
   remote.cards.forEach(function(c){ remoteMap[c.id] = c; });
   /* 库存只会减少：取双方较小值，避免并发把已抽走的库存恢复回来 */
   state.cards.forEach(function(c){
@@ -1131,7 +1145,6 @@ function mergeRemote(remote){
   var localMap = {};
   state.records.forEach(function(r){ localMap[r.name + '|' + r.time] = r; });
   var mineRecords = state.records.slice();
-  var purgedAt = state.settings && state.settings.purgedAt;
   var seen = {};
   state.records = [];
   remote.records.forEach(function(r){
@@ -2380,9 +2393,11 @@ function bindAdmin(){
       state.cards.forEach(function(c){
         c.stock = (typeof c.base === 'number' ? c.base : (typeof c.stock === 'number' ? c.stock : 1));
       });
-      saveAll();
+      saveAll().then(function(ok){
+        if(ok) toast('抽奖记录已清除，库存已恢复，已同步到云端');
+        else toast('记录已清除，但云端同步未完成，请稍后点击「立即同步到云端」');
+      });
       renderAdminRecords(); renderRecords(); renderGallery(); renderTicker(); renderStatus();
-      toast('抽奖记录已清除，库存已恢复');
     });
   });
   el('btnReset').addEventListener('click', function(){
