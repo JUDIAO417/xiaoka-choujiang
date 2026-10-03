@@ -4,7 +4,7 @@
       "id": "b01",
       "name": "吧唧 01",
       "img": "assets/badge-01.png",
-      "stock": 6,
+      "stock": 2,
       "base": 10,
       "drawn": false
     },
@@ -47,6 +47,35 @@
       "name": "1433223",
       "time": "2026-10-03 09:52",
       "ts": 1790992374155,
+      "test": true,
+      "empty": false,
+      "cards": [
+        {
+          "id": "b01",
+          "name": "吧唧 01",
+          "img": "assets/badge-01.png"
+        },
+        {
+          "id": "b01",
+          "name": "吧唧 01",
+          "img": "assets/badge-01.png"
+        },
+        {
+          "id": "b01",
+          "name": "吧唧 01",
+          "img": "assets/badge-01.png"
+        },
+        {
+          "id": "b01",
+          "name": "吧唧 01",
+          "img": "assets/badge-01.png"
+        }
+      ]
+    },
+    {
+      "name": "1433223",
+      "time": "2026-10-03 10:00",
+      "ts": 1790992811992,
       "test": true,
       "empty": false,
       "cards": [
