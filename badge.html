@@ -450,6 +450,14 @@ input,select,textarea{ font-family:inherit; }
 }
 @keyframes toastIn{ from{ opacity:0; transform:translateY(-12px);} to{ opacity:1; transform:translateY(0);} }
 .dialog-mask{ position:fixed; inset:0; z-index:150; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(9,7,24,.8); }
+/* 同步等待遮罩 */
+.sync-overlay{ position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(9,7,24,.85); }
+.sync-overlay.show{ display:flex; }
+.sync-card{ width:min(320px, 88vw); background:linear-gradient(160deg,#1d1633,#140f26); border:1px solid rgba(212,175,55,.35); border-radius:16px; padding:28px 20px 22px; text-align:center; box-shadow:0 12px 40px rgba(0,0,0,.5); }
+.sync-spinner{ width:38px; height:38px; margin:0 auto 14px; border:3px solid rgba(212,175,55,.2); border-top-color:var(--gold); border-radius:50%; animation:syncSpin 0.9s linear infinite; }
+@keyframes syncSpin{ to{ transform:rotate(360deg); } }
+.sync-text{ color:var(--gold); font-size:15px; font-weight:600; }
+.sync-sub{ color:var(--text-faint); font-size:12px; margin-top:8px; }
 .dialog-mask.open{ display:flex; }
 .dialog{
   background:linear-gradient(180deg,#1D1740,#171230); border:1px solid var(--line-strong);
@@ -725,6 +733,15 @@ input,select,textarea{ font-family:inherit; }
   </div>
 </div>
 
+<!-- 同步等待遮罩 -->
+<div class="sync-overlay" id="syncOverlay">
+  <div class="sync-card">
+    <div class="sync-spinner"></div>
+    <div class="sync-text" id="syncOverlayText">正在同步到云端…</div>
+    <div class="sync-sub">同步完成前请勿刷新页面，请稍候</div>
+  </div>
+</div>
+
 <!-- 收货信息对话框 -->
 <div class="dialog-mask" id="receiverMask">
   <div class="dialog">
@@ -823,6 +840,17 @@ function toast(msg){
   setTimeout(function(){ t.remove(); }, 2900);
 }
 var dialogResolve = null;
+var _syncOverlayAt = 0;
+var _syncRetrying = false;
+function showSyncOverlay(msg){
+  _syncOverlayAt = Date.now();
+  if(msg && el('syncOverlayText')) el('syncOverlayText').textContent = msg;
+  el('syncOverlay').classList.add('show');
+}
+function hideSyncOverlay(){
+  var wait = Math.max(0, 3000 - (Date.now() - _syncOverlayAt));
+  setTimeout(function(){ el('syncOverlay').classList.remove('show'); }, wait);
+}
 function confirmDialog(title, text){
   return new Promise(function(resolve){
     dialogResolve = resolve;
@@ -931,6 +959,7 @@ function ghSave(attempt){
     return Promise.resolve(false);
   }
   setSync('loading', '正在同步到云端…');
+  showSyncOverlay('正在同步到云端…');
   var GH_URL = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH;
   var purge = !!state._purgeRecords;
   state._purgeRecords = false;
@@ -974,12 +1003,16 @@ function ghSave(attempt){
       if(/429|403/.test(m)) setSync('bad', '云端同步被限流（GitHub 请求配额已满），数据已暂存本地，请稍后点击「立即同步」重试');
       else if(/409|11000/.test(m)) setSync('bad', '云端正被多人同时修改，同步未完成，数据已暂存本地，请稍后重试');
       else if(retryable && attempt < 2){
+        _syncRetrying = true;
+        showSyncOverlay('云端连接不稳定，正在自动重试…');
         setSync('loading', '云端连接不稳定，正在自动重试…');
-        setTimeout(function(){ ghSave(attempt + 1); }, 4000);
+        setTimeout(function(){ _syncRetrying = false; ghSave(attempt + 1); }, 4000);
       }
       else setSync('bad', '云端同步失败，数据已暂存本地（' + m + '）');
       saveLocal();
       return false;
+    }).finally(function(){
+      if(!_syncRetrying) hideSyncOverlay();
     });
 }
 function retryMerge(token, GH_URL, triesLeft){
