@@ -183,7 +183,12 @@
           "name": "女仆咖啡",
           "img": "https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/K9OLbtH60ocYJZxwHXwc8AdInxd"
         }
-      ]
+      ],
+      "receiver": {
+        "name": "方厌",
+        "phone": "15928633236",
+        "addr": "四川省成都市新都区朗诵曜龙湾"
+      }
     }
   ],
   "_purgeRecords": false
