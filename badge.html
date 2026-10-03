@@ -1002,11 +1002,11 @@ function ghSave(attempt){
       var retryable = /failed to fetch|network|timeout|abort|socket|ETIMEDOUT|ENOTFOUND|HTTP 5\d\d/i.test(m);
       if(/429|403/.test(m)) setSync('bad', '云端同步被限流（GitHub 请求配额已满），数据已暂存本地，请稍后点击「立即同步」重试');
       else if(/409|11000/.test(m)) setSync('bad', '云端正被多人同时修改，同步未完成，数据已暂存本地，请稍后重试');
-      else if(retryable && attempt < 2){
+      else if(retryable && attempt < 4){
         _syncRetrying = true;
-        showSyncOverlay('云端连接不稳定，正在自动重试…');
+        showSyncOverlay('云端连接不稳定，正在自动重试（' + (attempt + 1) + '/4）…');
         setSync('loading', '云端连接不稳定，正在自动重试…');
-        setTimeout(function(){ _syncRetrying = false; ghSave(attempt + 1); }, 4000);
+        setTimeout(function(){ _syncRetrying = false; ghSave(attempt + 1); }, 5000);
       }
       else setSync('bad', '云端同步失败，数据已暂存本地（' + m + '）');
       saveLocal();
