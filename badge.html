@@ -591,7 +591,7 @@ input,select,textarea{ font-family:inherit; }
       <div class="login-err" id="loginErr"></div>
     </div>
     <div id="adminView" style="display:none">
-      <div style="color:var(--text-faint);font-size:11px;text-align:center;margin-bottom:6px">吧唧抽奖机 · 版本 V1.0.13（若版本号旧请强制刷新页面）</div>
+      <div style="color:var(--text-faint);font-size:11px;text-align:center;margin-bottom:6px">吧唧抽奖机 · 版本 V1.0.14（若版本号旧请强制刷新页面）</div>
       <div class="sync-status" id="syncStatus">
         <span class="dot"></span><span id="syncText">数据连接中…</span>
       </div>
@@ -1184,8 +1184,10 @@ function mergeRemote(remote){
   state.records.forEach(function(r){ localMap[r.name + '|' + r.time] = r; });
   var mineRecords = state.records.slice();
   var seen = {};
+  var removedKeys = state._removedKeys || {};
   state.records = [];
   remote.records.forEach(function(r){
+    if(removedKeys[r.name + '|' + r.time]) return; /* 管理员撤销的记录不复活 */
     var mine = localMap[r.name + '|' + r.time];
     if(mine && mine.receiver && !r.receiver) r.receiver = mine.receiver;
     state.records.push(r);
@@ -1742,6 +1744,9 @@ function renderAdminRecords(){
             }
           });
         }
+        /* 记录删除标记：保存前的云端合并按 key 过滤，避免被云端旧记录合并回来（撤销失效） */
+        state._removedKeys = state._removedKeys || {};
+        state._removedKeys[r.name + '|' + r.time] = true;
         state.records = state.records.filter(function(x){ return !(x.name === r.name && x.time === r.time); });
         saveAll();
         renderAdminRecords(); renderRecords(); renderStatus();
