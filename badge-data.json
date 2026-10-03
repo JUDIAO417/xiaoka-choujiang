@@ -4,8 +4,8 @@
       "id": "b01",
       "name": "吧唧 01",
       "img": "assets/badge-01.png",
-      "stock": 22,
-      "base": 22,
+      "stock": 0,
+      "base": 0,
       "drawn": false
     },
     {
