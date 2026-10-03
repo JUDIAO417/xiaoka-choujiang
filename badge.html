@@ -275,6 +275,13 @@ input,select,textarea{ font-family:inherit; }
   margin-top:8px; font-size:13px; text-align:center; color:var(--text-dim);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
+.g-card .g-grp{
+  margin-top:3px; font-size:11px; text-align:center; color:var(--text-faint);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.g-card .g-grp:before{
+  content:'·'; margin-right:4px; color:var(--gold);
+}
 .g-card .flag{
   position:absolute; top:8px; right:8px; z-index:3;
   font-size:12px; padding:2px 9px; border-radius:12px; pointer-events:none;
@@ -599,6 +606,9 @@ input,select,textarea{ font-family:inherit; }
         <button id="btnAddCard" class="btn btn-primary" type="button">添加吧唧</button>
         <div class="adm-sec-title">吧唧列表</div>
         <div class="card-list" id="cardList"></div>
+        <div class="adm-sec-title">分组设置</div>
+        <div class="form-hint">给吧唧设置分组（在列表的分组输入框中填写组名）；勾选「仅展示」的分组只展示、不参与抽奖——该组的吧唧不会被抽中，但仍显示在巡览与图库中。分组由吧唧的分组名自动生成。</div>
+        <div id="groupSettings"></div>
       </div>
       <div class="adm-section" id="tab-names">
         <div class="adm-sec-title">添加可抽奖名字</div>
@@ -746,11 +756,11 @@ var DEFAULT_STOCK = 3;
 var BACK_DEFAULT = 'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh';
 var DEFAULT_NOTICE = '邮费自理 · 每个账号限抽一次';
 var INITIAL_CARDS = [
-  {id:'c01', name:'吧唧 01', weight:1, stock:0, base:0, img:'assets/badge-01.png'},
-  {id:'c02', name:'吧唧 02', weight:1, stock:0, base:0, img:'assets/badge-02.jpg'},
-  {id:'c03', name:'吧唧 03', weight:1, stock:0, base:0, img:'assets/badge-03.jpg'},
-  {id:'c04', name:'吧唧 04', weight:1, stock:0, base:0, img:'assets/badge-04.jpg'},
-  {id:'c05', name:'吧唧 05', weight:1, stock:0, base:0, img:'assets/badge-05.jpg'}
+  {id:'c01', name:'吧唧 01', weight:1, stock:0, base:0, group:'默认', img:'assets/badge-01.png'},
+  {id:'c02', name:'吧唧 02', weight:1, stock:0, base:0, group:'默认', img:'assets/badge-02.jpg'},
+  {id:'c03', name:'吧唧 03', weight:1, stock:0, base:0, group:'默认', img:'assets/badge-03.jpg'},
+  {id:'c04', name:'吧唧 04', weight:1, stock:0, base:0, group:'默认', img:'assets/badge-04.jpg'},
+  {id:'c05', name:'吧唧 05', weight:1, stock:0, base:0, group:'默认', img:'assets/badge-05.jpg'}
 ];
 
 /* ===== 状态 ===== */
@@ -761,13 +771,13 @@ var isDrawing = false;
 function defaultState(){
   return {
     version: 4,
-    settings: { weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false },
+    settings: { weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false, displayOnlyGroups: [] },
     cards: INITIAL_CARDS.map(function(c){ return Object.assign({}, c); }),
     names: [],
     records: []
   };
 }
-/* 迁移旧结构（drawn 标记 → 库存 stock/base；设置补全） */
+/* 迁移旧结构（drawn 标记 → 库存 stock/base；设置补全；分组补全） */
 function migrateState(s){
   if(s && Array.isArray(s.cards)){
     s.version = 4;
@@ -775,8 +785,9 @@ function migrateState(s){
       if(c.drawn !== undefined) delete c.drawn;
       c.stock = (typeof c.stock === 'number' && c.stock >= 0) ? c.stock : (c.drawn === false ? 3 : 0);
       c.base = (typeof c.base === 'number' && c.base >= 0) ? c.base : c.stock;
+      if(!c.group) c.group = '默认';
     });
-    s.settings = Object.assign({ weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false }, s.settings || {});
+    s.settings = Object.assign({ weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false, displayOnlyGroups: [] }, s.settings || {});
   }
   return s;
 }
@@ -1091,7 +1102,6 @@ function renderTicker(){
 }
 
 /* ===== 抽奖状态区 ===== */
-function totalStock(){ return state.cards.reduce(function(s, c){ return s + (typeof c.stock === 'number' ? c.stock : 0); }, 0); }
 function isTestName(n){ return n === '1433223'; }
 function renderStatus(){
   var pool = availableCards();
@@ -1119,9 +1129,20 @@ function renderStatus(){
     else el('btnDraw').textContent = '开始抽奖';
   }
 }
-function availableCards(){
-  return state.cards.filter(function(c){ return (typeof c.stock === 'number' ? c.stock : 0) > 0; });
+/* 分组：仅展示组（displayOnly）不参与抽奖，但仍在图库/巡览中展示 */
+function isDisplayOnly(c){
+  var g = (c && c.group) || '默认';
+  return (state.settings.displayOnlyGroups || []).indexOf(g) !== -1;
 }
+function drawableCards(){
+  return state.cards.filter(function(c){ return !isDisplayOnly(c); });
+}
+function availableCards(){
+  return state.cards.filter(function(c){
+    return !isDisplayOnly(c) && (typeof c.stock === 'number' ? c.stock : 0) > 0;
+  });
+}
+function totalStock(){ return state.cards.reduce(function(s, c){ return s + (isDisplayOnly(c) ? 0 : (typeof c.stock === 'number' ? c.stock : 0)); }, 0); }
 
 /* ===== 吧唧册 ===== */
 function renderGallery(){
@@ -1150,6 +1171,10 @@ function renderGallery(){
     nm.className = 'name';
     nm.textContent = card.name;
     g.appendChild(nm);
+    var gr = document.createElement('div');
+    gr.className = 'g-grp';
+    gr.textContent = (isDisplayOnly(card) ? '仅展示 · ' : '') + (card.group || '默认');
+    g.appendChild(gr);
     gal.appendChild(g);
   });
 }
@@ -1225,11 +1250,66 @@ function buildRecRow(r){
 }
 
 /* ===== 管理员视图 ===== */
+function renderGroupSettings(){
+  var wrap = el('groupSettings');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  var groups = {};
+  state.cards.forEach(function(c){
+    var g = (c.group || '默认');
+    groups[g] = (groups[g] || 0) + 1;
+  });
+  var names = Object.keys(groups);
+  if(names.length === 0){
+    var empty = document.createElement('div');
+    empty.className = 'rec-empty';
+    empty.textContent = '暂无分组（吧唧默认属于「默认」分组）';
+    wrap.appendChild(empty);
+    return;
+  }
+  names.forEach(function(g){
+    var row = document.createElement('div');
+    row.className = 'card-item';
+    var info = document.createElement('div');
+    info.style.flex = '1';
+    var nm = document.createElement('div');
+    nm.className = 'c-name';
+    var span = document.createElement('span');
+    span.style.fontWeight = '600';
+    span.textContent = g;
+    var small = document.createElement('small');
+    small.textContent = ' · ' + groups[g] + ' 张吧唧';
+    nm.appendChild(span); nm.appendChild(small);
+    info.appendChild(nm);
+    var chk = document.createElement('label');
+    chk.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.style.cssText = 'width:16px;height:16px;accent-color:var(--accent)';
+    cb.checked = (state.settings.displayOnlyGroups || []).indexOf(g) !== -1;
+    cb.addEventListener('change', function(){
+      var arr = state.settings.displayOnlyGroups || (state.settings.displayOnlyGroups = []);
+      var idx = arr.indexOf(g);
+      if(cb.checked && idx === -1) arr.push(g);
+      if(!cb.checked && idx !== -1) arr.splice(idx, 1);
+      saveAll();
+      renderGroupSettings(); renderGallery(); renderTicker(); renderStatus();
+      toast(cb.checked ? '「' + g + '」设为仅展示，不再参与抽奖' : '「' + g + '」已恢复参与抽奖');
+    });
+    chk.appendChild(cb);
+    var st = document.createElement('span');
+    st.textContent = '仅展示（不参与抽奖）';
+    chk.appendChild(st);
+    row.appendChild(info); row.appendChild(chk);
+    wrap.appendChild(row);
+  });
+}
 function renderAdmin(){
   renderAdminCards();
   renderAdminNames();
   renderAdminRecords();
   renderAdminSettings();
+  renderGroupSettings();
 }
 function renderAdminCards(){
   var list = el('cardList');
@@ -1283,6 +1363,22 @@ function renderAdminCards(){
       card.weight = Math.max(0, parseInt(w.value, 10) || 0);
       saveAll();
     });
+    var gl = document.createElement('span');
+    gl.className = 'label-small';
+    gl.textContent = '分组';
+    var g = document.createElement('input');
+    g.type = 'text';
+    g.className = 'w-input';
+    g.style.width = '76px';
+    g.value = card.group || '默认';
+    g.title = '设置该吧唧的分组（同一组名即同一分组）';
+    g.addEventListener('change', function(){
+      var v = g.value.trim();
+      card.group = v || '默认';
+      saveAll();
+      renderAdminCards(); renderGroupSettings(); renderGallery(); renderTicker(); renderStatus();
+      toast('已更新分组');
+    });
     var del = document.createElement('button');
     del.type = 'button';
     del.className = 'del';
@@ -1293,12 +1389,13 @@ function renderAdminCards(){
         if(!ok) return;
         state.cards = state.cards.filter(function(c){ return c.id !== card.id; });
         saveAll();
-        renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
+        renderAdminCards(); renderGroupSettings(); renderGallery(); renderTicker(); renderStatus();
       });
     });
     item.appendChild(img); item.appendChild(nm);
     item.appendChild(ql); item.appendChild(q);
     item.appendChild(wl); item.appendChild(w);
+    item.appendChild(gl); item.appendChild(g);
     item.appendChild(del);
     list.appendChild(item);
   });
@@ -1637,7 +1734,7 @@ function startDraw(){
     }
     if(picks.length < 4){
       var all = [];
-      state.cards.forEach(function(c){
+      drawableCards().forEach(function(c){
         var st = typeof c.stock === 'number' ? c.stock : 0;
         if(st > 0) for(var j=0;j<st;j++) all.push(c);
       });
@@ -1945,9 +2042,9 @@ function bindAdmin(){
     if(!name){ toast('请填写吧唧名称'); return; }
     if(!file && !url){ toast('请选择图片文件或填写图片链接'); return; }
     var addImg = function(img){
-      state.cards.push({ id: uid('c'), name: name, weight: 1, img: img, stock: 1, base: 1 });
+      state.cards.push({ id: uid('c'), name: name, weight: 1, group: '默认', img: img, stock: 1, base: 1 });
       saveAll();
-      renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
+      renderAdminCards(); renderGroupSettings(); renderGallery(); renderTicker(); renderStatus();
       el('newCardName').value = '';
       el('newCardFile').value = '';
       el('newCardUrl').value = '';
