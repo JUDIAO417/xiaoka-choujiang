@@ -4,8 +4,8 @@
       "id": "b01",
       "name": "吧唧 01",
       "img": "assets/badge-01.png",
-      "stock": 15,
-      "base": 15,
+      "stock": 12,
+      "base": 12,
       "drawn": false
     },
     {
@@ -116,6 +116,7 @@
   "version": 4,
   "_purgeRecords": false,
   "_stockOverrideIds": {
-    "b02": true
+    "b02": true,
+    "b01": true
   }
 }
