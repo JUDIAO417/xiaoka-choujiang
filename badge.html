@@ -591,7 +591,7 @@ input,select,textarea{ font-family:inherit; }
       <div class="login-err" id="loginErr"></div>
     </div>
     <div id="adminView" style="display:none">
-      <div style="color:var(--text-faint);font-size:11px;text-align:center;margin-bottom:6px">吧唧抽奖机 · 版本 V1.0.11（若版本号旧请强制刷新页面）</div>
+      <div style="color:var(--text-faint);font-size:11px;text-align:center;margin-bottom:6px">吧唧抽奖机 · 版本 V1.0.12（若版本号旧请强制刷新页面）</div>
       <div class="sync-status" id="syncStatus">
         <span class="dot"></span><span id="syncText">数据连接中…</span>
       </div>
@@ -1323,7 +1323,8 @@ function renderGallery(){
     g.appendChild(buildCardEl(card));
     var flag = document.createElement('div');
     var left = typeof card.stock === 'number' ? card.stock : 0;
-    if(left <= 0){ flag.className = 'flag out'; flag.textContent = '已抽完'; }
+    if(isDisplayOnly(card)){ flag.className = 'flag keep'; flag.textContent = '仅展示'; }
+    else if(left <= 0){ flag.className = 'flag out'; flag.textContent = '已抽完'; }
     else { flag.className = 'flag keep'; flag.textContent = '剩余 ×' + left; }
     g.appendChild(flag);
     var nm = document.createElement('div');
@@ -1359,10 +1360,10 @@ function renderRecords(){
     return;
   }
   recs.slice().reverse().forEach(function(r){
-    list.appendChild(buildRecRow(r));
+    list.appendChild(buildRecRow(r, false));
   });
 }
-function buildRecRow(r){
+function buildRecRow(r, showRecv){
   var row = document.createElement('div');
   row.className = 'rec-row';
   var who = document.createElement('div');
@@ -1396,7 +1397,8 @@ function buildRecRow(r){
       cards.appendChild(nm);
     });
   }
-  if(r.receiver){
+  /* 收货信息只在管理员界面显示（用户区记录不展示，避免泄露收货地址） */
+  if(showRecv && r.receiver){
     var rx = document.createElement('button');
     rx.type = 'button';
     rx.className = 'recv-line-btn';
@@ -1692,7 +1694,7 @@ function renderAdminRecords(){
     return;
   }
   state.records.slice().reverse().forEach(function(r){
-    var row = buildRecRow(r);
+    var row = buildRecRow(r, true);
     var undo = document.createElement('button');
     undo.type = 'button';
     undo.className = 'mini-btn';
@@ -1710,7 +1712,7 @@ function renderAdminRecords(){
             }
           });
         }
-        state.records = state.records.filter(function(x){ return x !== r; });
+        state.records = state.records.filter(function(x){ return !(x.name === r.name && x.time === r.time); });
         saveAll();
         renderAdminRecords(); renderRecords(); renderStatus();
         toast('已撤销「' + r.name + '」的抽奖');
@@ -2147,7 +2149,13 @@ function saveReceiver(){
   var addr = el('recvAddr').value.trim();
   if(!name || !phone || !addr){ el('recvErr').textContent = '请填写完整的收货信息（名字/手机号/地址）'; return; }
   if(!/^1\d{10}$/.test(phone)){ el('recvErr').textContent = '手机号格式不正确（请输入 11 位手机号）'; return; }
-  if(pendingRecv) pendingRecv.receiver = { name: name, phone: phone, addr: addr };
+  if(pendingRecv){
+    /* 按 name+time 从当前记录数组定位：并发合并可能已重建数组，旧引用可能失效 */
+    var cur = null;
+    state.records.forEach(function(r){ if(r.name === pendingRecv.name && r.time === pendingRecv.time) cur = r; });
+    if(cur) cur.receiver = { name: name, phone: phone, addr: addr };
+    else pendingRecv.receiver = { name: name, phone: phone, addr: addr };
+  }
   closeReceiver();
   saveAll();
   renderRecords();
