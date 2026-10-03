@@ -261,6 +261,10 @@ input,select,textarea{ font-family:inherit; }
   margin-top:8px; font-size:13px; text-align:center; color:var(--text-dim);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
+.g-card .g-grp{
+  margin-top:3px; font-size:11px; text-align:center; color:var(--text-faint);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
 .g-card .flag{
   position:absolute; top:8px; right:8px; z-index:3;
   font-size:12px; padding:2px 9px; border-radius:12px; pointer-events:none;
@@ -421,6 +425,13 @@ input,select,textarea{ font-family:inherit; }
 #receiverMask .dialog{ max-width:380px; }
 
 .toast-wrap{ position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+.sync-overlay{ position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(9,7,24,.85); }
+.sync-overlay.show{ display:flex; }
+.sync-card{ width:min(320px, 88vw); background:linear-gradient(160deg,#1d1633,#140f26); border:1px solid rgba(212,175,55,.35); border-radius:16px; padding:28px 20px 22px; text-align:center; box-shadow:0 12px 40px rgba(0,0,0,.5); }
+.sync-spinner{ width:38px; height:38px; margin:0 auto 14px; border:3px solid rgba(212,175,55,.2); border-top-color:var(--gold); border-radius:50%; animation:syncSpin 0.9s linear infinite; }
+@keyframes syncSpin{ to{ transform:rotate(360deg); } }
+.sync-text{ color:var(--gold); font-size:15px; font-weight:600; }
+.sync-sub{ color:var(--text-faint); font-size:12px; margin-top:8px; }
 .toast{
   background:var(--panel-2); border:1px solid var(--line-strong); color:var(--text);
   border-radius:11px; padding:10px 20px; font-size:14px;
@@ -551,7 +562,7 @@ input,select,textarea{ font-family:inherit; }
 <div class="admin-mask" id="adminMask">
   <div class="admin-panel" role="dialog" aria-label="管理员面板">
     <button class="admin-close" id="btnAdminClose" type="button" aria-label="关闭">×</button>
-    <h2>管理员面板</h2>
+    <h2>管理员面板 <span style="font-size:12px;color:var(--text-dim);font-weight:400">V1.0.13 · 数据同步至 Gitee</span></h2>
     <div id="loginView" class="login-box">
       <div class="lock">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" fill="#fff"/><path d="M8 10.5V7.8a4 4 0 118 0v2.7" stroke="#fff" stroke-width="2"/><circle cx="12" cy="15.4" r="1.6" fill="#7C5CE0"/></svg>
@@ -585,6 +596,13 @@ input,select,textarea{ font-family:inherit; }
         <button id="btnAddCard" class="btn btn-primary" type="button">添加卡片</button>
         <div class="adm-sec-title">卡片列表</div>
         <div class="card-list" id="cardList"></div>
+        <div class="adm-sec-title">分组设置</div>
+        <div class="form-hint">可以自己添加、删除分组：在卡片列表的分组下拉中选择分组，或先在这里添加分组再把卡片归入。勾选「仅展示」的分组只展示、不参与抽奖——该组的卡片不会被抽中，但仍显示在巡览与图库中。</div>
+        <div class="form-row">
+          <input type="text" id="newGroupName" placeholder="输入新分组名">
+          <button id="btnAddGroup" class="btn" type="button">添加分组</button>
+        </div>
+        <div id="groupSettings"></div>
       </div>
       <div class="adm-section" id="tab-names">
         <div class="adm-sec-title">添加可抽奖名字</div>
@@ -660,6 +678,15 @@ input,select,textarea{ font-family:inherit; }
           <button id="btnSaveToken" class="btn" type="button">保存 Token</button>
         </div>
         <div class="form-hint">Token 仅保存在当前浏览器的本地存储中，不会写入页面代码与 data.json。页面公开后切勿让 Token 泄露；若担心安全，活动结束后可撤销该 Token。</div>
+        <div class="adm-sec-title">Gitee 码云同步（唯一云端通道）</div>
+        <div class="form-hint">抽奖者都在国内时，使用 Gitee 同步最稳定：注册码云 gitee.com → 新建一个公开仓库（任意名称）→ 在「设置 → 安全设置 → 私人令牌」生成令牌（勾选 projects）→ 填入下面三项。保存后同步只走 Gitee，首次同步会自动创建数据文件。</div>
+        <div class="form-row">
+          <input type="text" id="giteeOwnerInput" placeholder="Gitee 用户名" autocomplete="off">
+          <input type="text" id="giteeRepoInput" placeholder="Gitee 仓库名" autocomplete="off">
+          <input type="password" id="giteeTokenInput" placeholder="Gitee 私人令牌" autocomplete="off">
+          <button id="btnSaveGitee" class="btn" type="button">保存 Gitee 配置</button>
+        </div>
+        <div class="form-hint">已配置 Gitee 时，数据只同步到 Gitee，不会使用 GitHub。未配置时默认使用内置码云仓库；此 GitHub Token 仅在极端情况下作为备用。</div>
         <button id="btnForceSync" class="btn" type="button">立即同步到云端</button>
         <div class="adm-sec-title">导出备份</div>
         <button id="btnExport" class="btn" type="button">导出数据（JSON）</button>
@@ -725,6 +752,26 @@ input,select,textarea{ font-family:inherit; }
   </div>
 </div>
 
+<div class="sync-overlay" id="syncOverlay">
+  <div class="sync-card">
+    <div class="sync-spinner"></div>
+    <div class="sync-text" id="syncOverlayText">正在同步到云端…</div>
+    <div class="sync-sub">同步完成前请勿刷新页面，请稍候</div>
+  </div>
+</div>
+
+<!-- 云端连接失败错误页 -->
+<div class="dialog-mask" id="netErrMask" style="z-index:300">
+  <div class="dialog">
+    <svg viewBox="0 0 24 24" width="44" height="44" fill="none" style="margin:0 auto 10px;display:block"><path d="M3 11.5a15 15 0 0 1 18 0M5.5 14.5a10.5 10.5 0 0 1 13 0M8 17.5a6 6 0 0 1 8 0" stroke="#D4AF37" stroke-width="1.6" stroke-linecap="round"/><path d="M12 20.5v.01" stroke="#D4AF37" stroke-width="2.4" stroke-linecap="round"/><path d="M3 3l18 18" stroke="#8B5CF6" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <h3>云端连接失败</h3>
+    <p style="color:var(--text-dim);font-size:14px;line-height:1.9;margin-bottom:16px">无法连接到抽奖数据云端。<br>请检查网络（切换 Wi-Fi / 开启流量）后重试。<br>为避免显示旧数据，本页暂未加载抽奖数据。</p>
+    <div class="acts" style="justify-content:center">
+      <button class="btn btn-primary" id="btnNetRetry" type="button">重新连接</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <!-- ===== SCRIPT:STATE ===== -->
@@ -735,6 +782,15 @@ var GH_OWNER = 'JUDIAO417';
 var GH_REPO = 'xiaoka-choujiang';
 var GH_PATH = 'data.json';
 var TOKEN_KEY = 'cardDrawGitHubToken';
+var GITEE_OWNER_KEY = 'cardGiteeOwner';
+var GITEE_REPO_KEY = 'cardGiteeRepo';
+var GITEE_TOKEN_KEY = 'cardGiteeToken';
+/* 小卡数据文件（Gitee 云端通道，与吧唧 badge-data.json 分离） */
+var GITEE_PATH = 'card-data.json';
+/* 内置码云仓库（与管理面板保存的配置一致）：数据只同步到 Gitee */
+var GITEE_OWNER_DEFAULT = 'sykjsj';
+var GITEE_REPO_DEFAULT = 'badge-sync';
+var GITEE_TOKEN_DEFAULT = '54217db0ce6e39c263c7bd1cbd1003eb';
 var LS_KEY = 'cardDrawData_v2';
 var TEST_NAME = '1433223';
 var DEFAULT_STOCK = 3;
@@ -759,8 +815,8 @@ var isDrawing = false;
 function defaultState(){
   return {
     version: 4,
-    settings: { weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false },
-    cards: INITIAL_CARDS.map(function(c){ return Object.assign({}, c); }),
+    settings: { weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false, displayOnlyGroups: [], extraGroups: [] },
+    cards: INITIAL_CARDS.map(function(c){ return Object.assign({}, c, { group: (c.group || '默认') }); }),
     names: [],
     records: []
   };
@@ -773,10 +829,38 @@ function migrateState(s){
       if(c.drawn !== undefined) delete c.drawn;
       c.stock = (typeof c.stock === 'number' && c.stock >= 0) ? c.stock : (c.drawn === false ? 3 : 0);
       c.base = (typeof c.base === 'number' && c.base >= 0) ? c.base : c.stock;
+      if(c.group === undefined) c.group = '默认';
     });
-    s.settings = Object.assign({ weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false }, s.settings || {});
+    s.settings = Object.assign({ weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false, displayOnlyGroups: [], extraGroups: [] }, s.settings || {});
   }
   return s;
+}
+function applyCloudState(s, sha){
+  migrateState(s);
+  /* 合并 ghLoad 完成前本地已产生的增量（管理员加名、本地新增记录）；清除记录后旧的本地记录不复活 */
+  var mine = state;
+  /* purgedAt 取「本地与云端较新值」：即使本机清除记录还没同步到云端，也能过滤掉清除前的旧记录 */
+  var purgedAt = Math.max(
+    (s.settings && s.settings.purgedAt) || 0,
+    (mine.settings && mine.settings.purgedAt) || 0
+  ) || null;
+  if(purgedAt) s.settings.purgedAt = purgedAt;
+  /* 云端若还是清除前的旧数据（ts 早于清除时刻），一并过滤，避免旧记录被拉回 */
+  if(purgedAt){
+    s.records = s.records.filter(function(r){ return !(r.ts && r.ts < purgedAt); });
+  }
+  var cloudNames = s.names.slice();
+  mine.names.forEach(function(n){ if(cloudNames.indexOf(n) === -1) cloudNames.push(n); });
+  s.names = cloudNames;
+  mine.records.forEach(function(r){
+    if(purgedAt && (!r.ts || r.ts < purgedAt)) return;
+    var dup = s.records.some(function(x){ return x.name === r.name && x.time === r.time; });
+    if(!dup) s.records.push(r);
+  });
+  state = s;
+  state.settings = state.settings || defaultState().settings;
+  if(sha) syncState.lastSha = sha;
+  return true;
 }
 function loadLocal(){
   try{
@@ -850,8 +934,10 @@ function downloadJSON(name, obj){
   setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 300);
 }
 
-/* ===== GitHub 数据同步（data.json 同目录） ===== */
+/* ===== 云端数据同步（Gitee 唯一通道，GitHub 仅静态托管） ===== */
 var syncState = { lastSha: null, ok: true };
+var _syncOverlayAt = 0;
+var _syncRetrying = false;
 /* 页面内嵌同步 Token（拆段存储，避免被仓库密钥扫描拦截）；管理面板填写的 Token 优先 */
 var _tkA = 'ghp_V1W0JT2ershcPopuN3xTUR47axv';
 var _tkB = 'dsK1sqiuy';
@@ -867,7 +953,72 @@ function ghHeaders(token){
   if(token) h['Authorization'] = 'Bearer ' + token;
   return h;
 }
+function giteeConfig(){
+  try{
+    var owner = localStorage.getItem(GITEE_OWNER_KEY);
+    var repo = localStorage.getItem(GITEE_REPO_KEY);
+    var token = localStorage.getItem(GITEE_TOKEN_KEY);
+    if(owner && repo && token) return { owner: owner, repo: repo, token: token };
+  }catch(e){}
+  /* 未配置时默认使用内置码云仓库：开箱即用 Gitee 唯一通道 */
+  return { owner: GITEE_OWNER_DEFAULT, repo: GITEE_REPO_DEFAULT, token: GITEE_TOKEN_DEFAULT };
+}
+function showSyncOverlay(msg){
+  _syncOverlayAt = Date.now();
+  if(msg && el('syncOverlayText')) el('syncOverlayText').textContent = msg;
+  el('syncOverlay').classList.add('show');
+}
+function hideSyncOverlay(){
+  var wait = Math.max(0, 3000 - (Date.now() - _syncOverlayAt));
+  setTimeout(function(){ el('syncOverlay').classList.remove('show'); }, wait);
+}
+function showNetError(){
+  try{ el('netErrMask').classList.add('open'); }catch(e){}
+  setSync('bad', '云端连接失败，请更换网络后重试');
+}
 function ghLoad(){
+  return giteeLoad().catch(function(err){
+    setSync('bad', 'Gitee 读取失败（' + err.message + '），尝试 GitHub…');
+    return ghLoadGitHub();
+  });
+}
+function giteeLoad(attempt){
+  var attempt = attempt || 0;
+  var cfg = giteeConfig();
+  setSync('loading', '数据连接中…');
+  return fetch('https://gitee.com/api/v5/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + GITEE_PATH + '?access_token=' + encodeURIComponent(cfg.token), { headers: { 'Accept': 'application/json' } })
+    .then(function(res){
+      if(res.status === 404){
+        var local = loadLocal();
+        state = local || defaultState();
+        migrateState(state);
+        setSync('ok', 'Gitee 数据尚未初始化，已使用本地数据（首次保存时自动创建）');
+        return true;
+      }
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(j){
+      if(j === true) return true;
+      if(!j || !j.content) throw new Error('远端数据不存在');
+      var s = JSON.parse(decodeURIComponent(escape(atob(j.content))));
+      if(!s || !Array.isArray(s.cards) || !Array.isArray(s.names)) throw new Error('数据格式不符');
+      applyCloudState(s, j.sha || null);
+      setSync('ok', '数据已从云端加载（Gitee 码云）');
+      return true;
+    })
+    .catch(function(err){
+      var m = String(err && err.message ? err.message : err);
+      var retryable = /failed to fetch|network|timeout|abort|socket|ETIMEDOUT|ENOTFOUND|HTTP 5\d\d/i.test(m);
+      if(retryable && attempt < 2){
+        setSync('loading', '云端连接不稳定，正在自动重试（' + (attempt + 1) + '/2）…');
+        return new Promise(function(res){ setTimeout(function(){ res(giteeLoad(attempt + 1)); }, 2500); });
+      }
+      throw err;
+    });
+}
+function ghLoadGitHub(attempt){
+  var attempt = attempt || 0;
   setSync('loading', '数据连接中…');
   /* 直读 GitHub Contents API：实时最新、无 CDN 缓存延迟；带 token 时配额 5000 次/时 */
   return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, { headers: ghHeaders(ghToken()) })
@@ -878,30 +1029,21 @@ function ghLoad(){
     .then(function(j){
       var s = JSON.parse(decodeURIComponent(escape(atob(j.content))));
       if(s && Array.isArray(s.cards) && Array.isArray(s.names)){
-        migrateState(s);
-        /* 合并 ghLoad 完成前本地已产生的增量（管理员加名、本地新增记录）；清除记录后旧的本地记录不复活 */
-        var mine = state;
-        var purgedAt = s.settings && s.settings.purgedAt;
-        var cloudNames = s.names.slice();
-        mine.names.forEach(function(n){ if(cloudNames.indexOf(n) === -1) cloudNames.push(n); });
-        s.names = cloudNames;
-        mine.records.forEach(function(r){
-          if(purgedAt && (!r.ts || r.ts < purgedAt)) return;
-          var dup = s.records.some(function(x){ return x.name === r.name && x.time === r.time; });
-          if(!dup) s.records.push(r);
-        });
-        state = s;
-        state.settings = state.settings || defaultState().settings;
-        if(j && j.sha) syncState.lastSha = j.sha;
+        applyCloudState(s, j.sha);
+        setSync('ok', '数据已从云端加载（GitHub）');
         return true;
       }
       throw new Error('data.json 格式不符');
     })
     .catch(function(err){
-      var local = loadLocal();
-      state = local || defaultState();
-      if(local){ setSync('bad', '云端读取失败，使用本地缓存（' + err.message + '）'); }
-      else{ setSync('bad', '云端读取失败，使用初始数据'); }
+      var m = String(err && err.message ? err.message : err);
+      var retryable = /failed to fetch|network|timeout|abort|socket|ETIMEDOUT|ENOTFOUND|HTTP 5\d\d/i.test(m);
+      if(retryable && attempt < 2){
+        setSync('loading', '云端连接不稳定，正在自动重试（' + (attempt + 1) + '/2）…');
+        return new Promise(function(res){ setTimeout(function(){ res(ghLoadGitHub(attempt + 1)); }, 2500); });
+      }
+      /* 最终仍失败：显示错误页提醒更换网络，不再用本地缓存兜底（避免展示旧数据误导） */
+      showNetError();
       return false;
     });
 }
@@ -983,6 +1125,92 @@ function retryMerge(token, GH_URL, triesLeft){
       return res2.json();
     });
 }
+function giteeSave(attempt){
+  var attempt = attempt || 0;
+  var cfg = giteeConfig();
+  setSync('loading', '正在同步到云端…');
+  showSyncOverlay('正在同步到云端…');
+  var GU = 'https://gitee.com/api/v5/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + GITEE_PATH + '?access_token=' + encodeURIComponent(cfg.token);
+  var purge = !!state._purgeRecords;
+  state._purgeRecords = false;
+  return fetch(GU, { headers: { 'Accept': 'application/json' } })
+    .then(function(r2){
+      if(r2.status === 404){
+        /* 仓库里还没有数据文件：自动初始化创建 */
+        return { notFound: true };
+      }
+      if(!r2.ok) throw new Error('HTTP ' + r2.status);
+      return r2.json();
+    })
+    .then(function(j2){
+      var remote;
+      var oldSha = null;
+      if(j2.notFound){
+        remote = defaultState();
+      }else{
+        if(!j2 || !j2.content) throw new Error('远端读取异常');
+        oldSha = j2.sha || null;
+        remote = JSON.parse(decodeURIComponent(escape(atob(j2.content))));
+        if(!remote || !Array.isArray(remote.cards) || !Array.isArray(remote.names)) throw new Error('远端数据格式不符');
+      }
+      if(purge) remote.records = [];
+      mergeRemote(remote);
+      var payload = JSON.stringify(state, null, 2);
+      var body = { content: btoa(unescape(encodeURIComponent(payload))), message: 'update card-data.json (merge-first)' };
+      if(oldSha) body.sha = oldSha;
+      /* Gitee：文件已存在（更新）必须用 PUT，首次创建（文件不存在）用 POST */
+      return fetch(GU, {
+        method: oldSha ? 'PUT' : 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    })
+    .then(function(res){
+      if(res && res.status === 409 && attempt < 2){
+        _syncRetrying = true;
+        showSyncOverlay('云端冲突，正在合并重试…');
+        setSync('loading', '云端冲突，正在合并重试…');
+        return new Promise(function(r){ setTimeout(r, 2000); })
+          .then(function(){ _syncRetrying = false; return giteeSave(attempt + 1); });
+      }
+      /* 防御：文件已存在但本次用了 POST（旧逻辑残留/极端情况）→ 重新 GET 拿 sha 后转 PUT */
+      if(res && res.status === 400 && attempt < 2){
+        _syncRetrying = true;
+        showSyncOverlay('云端文件已存在，正在改用更新模式重试…');
+        setSync('loading', '云端文件已存在，正在改用更新模式重试…');
+        return new Promise(function(r){ setTimeout(r, 1500); })
+          .then(function(){ _syncRetrying = false; return giteeSave(attempt + 1); });
+      }
+      if(res && !res.ok) throw new Error('HTTP ' + res.status);
+      if(res && res.pendingRetry) return res;
+      return res.json().catch(function(){ return {}; });
+    })
+    .then(function(j){
+      if(j && j.pendingRetry) return false;
+      var sha = j && j.content && j.content.sha ? j.content.sha : (j && j.sha);
+      if(sha) syncState.lastSha = sha;
+      state._stockOverrideIds = {};
+      setSync('ok', '数据已同步到云端（Gitee 码云）');
+      saveLocal();
+      return true;
+    }).catch(function(err){
+      var m = String(err && err.message ? err.message : err);
+      var retryable = /failed to fetch|network|timeout|abort|socket|ETIMEDOUT|ENOTFOUND|HTTP 5\d\d/i.test(m);
+      if(/429|403/.test(m)) setSync('bad', '云端同步被限流（Gitee 请求配额已满），数据已暂存本地，请稍后点击「立即同步」重试');
+      else if(retryable && attempt < 4){
+        _syncRetrying = true;
+        showSyncOverlay('云端连接不稳定，正在自动重试（' + (attempt + 1) + '/4）…');
+        setSync('loading', '云端连接不稳定，正在自动重试…');
+        return new Promise(function(r){ setTimeout(r, 5000); })
+          .then(function(){ _syncRetrying = false; return giteeSave(attempt + 1); });
+      }
+      else setSync('bad', '云端同步失败，数据已暂存本地（' + m + '）');
+      saveLocal();
+      return Promise.reject(err);
+    }).finally(function(){
+      if(!_syncRetrying) hideSyncOverlay();
+    });
+}
 function mergeRemote(remote){
   var remoteMap = {};
   remote.cards.forEach(function(c){ remoteMap[c.id] = c; });
@@ -994,7 +1222,19 @@ function mergeRemote(remote){
   });
   state.cards = remote.cards.map(function(c){
     var mine = state.cards.filter(function(x){ return x.id === c.id; })[0];
-    return Object.assign({}, c, { stock: (mine && typeof mine.stock === 'number') ? Math.min(mine.stock, c.stock) : c.stock });
+    var ov = state._stockOverrideIds && state._stockOverrideIds[c.id];
+    var newStock = ov && mine
+      ? mine.stock
+      : (mine && typeof mine.stock === 'number') ? Math.min(mine.stock, c.stock) : c.stock;
+    var out = Object.assign({}, c, { stock: newStock });
+    if(ov && mine && typeof mine.base === 'number') out.base = mine.base;
+    /* 管理员维护的字段（名字/权重/分组）以本地为准：避免保存前的云端合并回滚刚改的字段 */
+    if(mine){
+      if(typeof mine.name === 'string' && mine.name) out.name = mine.name;
+      if(typeof mine.weight === 'number' && mine.weight >= 0) out.weight = mine.weight;
+      if(typeof mine.group === 'string' && mine.group) out.group = mine.group;
+    }
+    return out;
   });
   /* 名单取并集：避免并发把管理员新加的名字清掉 */
   var mineNames = state.names.slice();
@@ -1006,8 +1246,10 @@ function mergeRemote(remote){
   var mineRecords = state.records.slice();
   var purgedAt = state.settings && state.settings.purgedAt;
   var seen = {};
+  var removedKeys = state._removedKeys || {};
   state.records = [];
   remote.records.forEach(function(r){
+    if(removedKeys[r.name + '|' + r.time]) return; /* 管理员撤销的记录不复活 */
     var mine = localMap[r.name + '|' + r.time];
     if(mine && mine.receiver && !r.receiver) r.receiver = mine.receiver;
     state.records.push(r);
@@ -1081,7 +1323,6 @@ function renderTicker(){
 }
 
 /* ===== 抽奖状态区 ===== */
-function totalStock(){ return state.cards.reduce(function(s, c){ return s + (typeof c.stock === 'number' ? c.stock : 0); }, 0); }
 function isTestName(n){ return n === '1433223'; }
 function renderStatus(){
   var pool = availableCards();
@@ -1109,8 +1350,27 @@ function renderStatus(){
     else el('btnDraw').textContent = '开始抽奖';
   }
 }
+function isDisplayOnly(c){
+  var g = (c && c.group) || '默认';
+  return (state.settings.displayOnlyGroups || []).indexOf(g) !== -1;
+}
+function drawableCards(){
+  return state.cards.filter(function(c){ return !isDisplayOnly(c); });
+}
 function availableCards(){
-  return state.cards.filter(function(c){ return (typeof c.stock === 'number' ? c.stock : 0) > 0; });
+  return state.cards.filter(function(c){ return !isDisplayOnly(c) && (typeof c.stock === 'number' ? c.stock : 0) > 0; });
+}
+function totalStock(){ return state.cards.reduce(function(s, c){ return s + (isDisplayOnly(c) ? 0 : (typeof c.stock === 'number' ? c.stock : 0)); }, 0); }
+function collectGroups(){
+  var set = {};
+  state.cards.forEach(function(c){
+    var g = (c.group || '默认');
+    set[g] = (set[g] || 0) + 1;
+  });
+  (state.settings.extraGroups || []).forEach(function(g){
+    if(!set[g]) set[g] = 0;
+  });
+  return set;
 }
 
 /* ===== 卡册 ===== */
@@ -1133,34 +1393,47 @@ function renderGallery(){
     g.appendChild(buildCardEl(card));
     var flag = document.createElement('div');
     var left = typeof card.stock === 'number' ? card.stock : 0;
-    if(left <= 0){ flag.className = 'flag out'; flag.textContent = '已抽完'; }
+    if(isDisplayOnly(card)){ flag.className = 'flag keep'; flag.textContent = '仅展示'; }
+    else if(left <= 0){ flag.className = 'flag out'; flag.textContent = '已抽完'; }
     else { flag.className = 'flag keep'; flag.textContent = '剩余 ×' + left; }
     g.appendChild(flag);
     var nm = document.createElement('div');
     nm.className = 'name';
     nm.textContent = card.name;
     g.appendChild(nm);
+    var gr = document.createElement('div');
+    gr.className = 'g-grp';
+    gr.textContent = (isDisplayOnly(card) ? '仅展示 · ' : '') + (card.group || '默认');
+    g.appendChild(gr);
     gal.appendChild(g);
   });
 }
 
 /* ===== 抽奖记录 ===== */
+function visibleRecords(){
+  /* 管理员与测试账号 1433223 可见全部记录；普通用户只能看到当前名字产生的记录 */
+  if(adminLogged) return state.records;
+  if(isTestName(currentName)) return state.records;
+  if(currentName) return state.records.filter(function(r){ return r.name === currentName; });
+  return [];
+}
 function renderRecords(){
   var list = el('recList');
   list.innerHTML = '';
-  el('recCount').textContent = state.records.length + ' 条';
-  if(state.records.length === 0){
+  var recs = visibleRecords();
+  el('recCount').textContent = recs.length + ' 条';
+  if(recs.length === 0){
     var d = document.createElement('div');
     d.className = 'rec-empty';
-    d.textContent = '还没有抽奖记录，输入名字后开始抽奖吧';
+    d.textContent = currentName ? '还没有你的抽奖记录，点击「开始抽奖」试试' : '输入名字后即可查看自己的抽奖记录';
     list.appendChild(d);
     return;
   }
-  state.records.slice().reverse().forEach(function(r){
-    list.appendChild(buildRecRow(r));
+  recs.slice().reverse().forEach(function(r){
+    list.appendChild(buildRecRow(r, false));
   });
 }
-function buildRecRow(r){
+function buildRecRow(r, showRecv){
   var row = document.createElement('div');
   row.className = 'rec-row';
   var who = document.createElement('div');
@@ -1194,7 +1467,8 @@ function buildRecRow(r){
       cards.appendChild(nm);
     });
   }
-  if(r.receiver){
+  /* 收货信息只在管理员界面显示（用户区记录不展示，避免泄露收货地址） */
+  if(showRecv && r.receiver){
     var rx = document.createElement('button');
     rx.type = 'button';
     rx.className = 'recv-line-btn';
@@ -1220,6 +1494,7 @@ function renderAdmin(){
   renderAdminNames();
   renderAdminRecords();
   renderAdminSettings();
+  renderGroupSettings();
 }
 function renderAdminCards(){
   var list = el('cardList');
@@ -1238,7 +1513,11 @@ function renderAdminCards(){
     input.addEventListener('change', function(){
       var v = input.value.trim();
       if(!v){ input.value = card.name; toast('名字不能为空'); return; }
-      card.name = v;
+      /* 云端合并会重建数组，按 id 实时查找当前对象再修改，避免改到旧引用导致回弹 */
+      var cur = null;
+      state.cards.forEach(function(c){ if(c.id === card.id) cur = c; });
+      if(!cur) return;
+      cur.name = v;
       saveAll();
       renderGallery(); renderTicker();
       toast('已修改卡片名字');
@@ -1257,7 +1536,13 @@ function renderAdminCards(){
     q.title = '设置该卡当前库存（同时作为重置后的初始数量）';
     q.addEventListener('change', function(){
       var v = Math.max(0, parseInt(q.value, 10) || 0);
-      card.stock = v; card.base = v;
+      /* 按 id 实时查找当前对象并打覆盖标记：数量是管理员主动设置，不能被并发合并回弹 */
+      var cur = null;
+      state.cards.forEach(function(c){ if(c.id === card.id) cur = c; });
+      if(!cur) return;
+      cur.stock = v; cur.base = v;
+      state._stockOverrideIds = state._stockOverrideIds || {};
+      state._stockOverrideIds[card.id] = true;
       saveAll();
       renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
       toast('已更新库存');
@@ -1270,8 +1555,54 @@ function renderAdminCards(){
     w.className = 'w-input';
     w.value = card.weight;
     w.addEventListener('change', function(){
-      card.weight = Math.max(0, parseInt(w.value, 10) || 0);
+      var cur = null;
+      state.cards.forEach(function(c){ if(c.id === card.id) cur = c; });
+      if(!cur) return;
+      cur.weight = Math.max(0, parseInt(w.value, 10) || 0);
       saveAll();
+    });
+    var gl = document.createElement('span');
+    gl.className = 'label-small';
+    gl.textContent = '分组';
+    var g = document.createElement('select');
+    g.className = 'w-input';
+    g.style.width = '108px';
+    g.title = '选择该卡片的分组（同一组名即同一分组）';
+    /* 下拉列出所有已有分组（含自建分组），并提供「＋ 新建分组」 */
+    var gOpts = collectGroups();
+    var gNames = Object.keys(gOpts);
+    var curGroup = card.group || '默认';
+    if(gNames.indexOf(curGroup) === -1) gNames.push(curGroup);
+    gNames.forEach(function(gn){
+      var o = document.createElement('option');
+      o.value = gn; o.textContent = gn;
+      g.appendChild(o);
+    });
+    var gNew = document.createElement('option');
+    gNew.value = '__new__';
+    gNew.textContent = '＋ 新建分组';
+    g.appendChild(gNew);
+    g.value = curGroup;
+    g.addEventListener('change', function(){
+      var v = g.value;
+      if(v === '__new__'){
+        var nn = window.prompt ? prompt('输入新分组名称：') : null;
+        if(nn === null || !String(nn).trim()){
+          toast('已取消新建分组，可在「分组设置」中添加');
+          g.value = curGroup;
+          return;
+        }
+        v = String(nn).trim();
+        var arr = state.settings.extraGroups || (state.settings.extraGroups = []);
+        if(arr.indexOf(v) === -1) arr.push(v);
+      }
+      var cur = null;
+      state.cards.forEach(function(c){ if(c.id === card.id) cur = c; });
+      if(!cur) return;
+      cur.group = v || '默认';
+      saveAll();
+      renderAdminCards(); renderGroupSettings(); renderGallery(); renderTicker(); renderStatus();
+      toast('已更新分组');
     });
     var del = document.createElement('button');
     del.type = 'button';
@@ -1289,6 +1620,7 @@ function renderAdminCards(){
     item.appendChild(img); item.appendChild(nm);
     item.appendChild(ql); item.appendChild(q);
     item.appendChild(wl); item.appendChild(w);
+    item.appendChild(gl); item.appendChild(g);
     item.appendChild(del);
     list.appendChild(item);
   });
@@ -1367,7 +1699,7 @@ function renderAdminRecords(){
     return;
   }
   state.records.slice().reverse().forEach(function(r){
-    var row = buildRecRow(r);
+    var row = buildRecRow(r, true);
     var undo = document.createElement('button');
     undo.type = 'button';
     undo.className = 'mini-btn';
@@ -1375,20 +1707,29 @@ function renderAdminRecords(){
     undo.addEventListener('click', function(){
       confirmDialog('撤销记录', '撤销「' + r.name + '」的抽奖记录，允许其重新抽奖？').then(function(ok){
         if(!ok) return;
-        if(!r.test){
-          r.cards.forEach(function(c){
-            var target = state.cards.filter(function(x){ return x.id === c.id; })[0];
-            if(target){
-              var st = typeof target.stock === 'number' ? target.stock : 0;
-              var base = typeof target.base === 'number' ? target.base : 1;
-              target.stock = Math.min(base, st + 1);
-            }
-          });
+        /* 按名字+时间精确定位当前记录对象（云端合并会重建数组，旧引用会失效） */
+        var target = state.records.filter(function(x){ return x.name === r.name && x.time === r.time; })[0];
+        if(target){
+          if(!target.test){
+            (target.cards || []).forEach(function(c){
+              var cur = state.cards.filter(function(x){ return x.id === c.id; })[0];
+              if(cur){
+                var st = typeof cur.stock === 'number' ? cur.stock : 0;
+                var base = typeof cur.base === 'number' ? cur.base : 1;
+                cur.stock = Math.min(base, st + 1);
+              }
+            });
+          }
+          /* 记录删除标记：保存前的云端合并按 key 过滤，避免被云端旧记录合并回来（撤销失效） */
+          state._removedKeys = state._removedKeys || {};
+          state._removedKeys[target.name + '|' + target.time] = true;
+          state.records = state.records.filter(function(x){ return !(x.name === r.name && x.time === r.time); });
+          saveAll();
+          renderAdminRecords(); renderRecords(); renderStatus();
+          toast('已撤销「' + r.name + '」的抽奖');
+        }else{
+          toast('该记录已被清除，无需撤销');
         }
-        state.records = state.records.filter(function(x){ return x !== r; });
-        saveAll();
-        renderAdminRecords(); renderRecords(); renderStatus();
-        toast('已撤销「' + r.name + '」的抽奖');
       });
     });
     row.appendChild(undo);
@@ -1426,6 +1767,11 @@ function renderAdminSettings(){
   el('noticeInput').value = state.settings.notice || '';
   el('ghTokenInput').value = ghToken();
   el('ghTokenInput').placeholder = ghToken() ? 'Token 已配置（已隐藏）' : 'ghp_ 开头的 GitHub Token';
+  var gc = giteeConfig();
+  el('giteeOwnerInput').value = gc ? gc.owner : '';
+  el('giteeRepoInput').value = gc ? gc.repo : '';
+  el('giteeTokenInput').value = gc ? gc.token : '';
+  el('giteeTokenInput').placeholder = '已使用内置码云令牌（可覆盖）';
   el('emptyRateInput').value = state.settings.emptyRate;
   el('minWinnersInput').value = state.settings.minWinners;
   el('lockedInput').checked = !!state.settings.locked;
@@ -1452,6 +1798,83 @@ function renderAdminSettings(){
     line += '（注意：参与者名单 ' + state.names.length + ' 人 < 保底 ' + minW + ' 人，无法保证达到保底，请添加更多参与者）';
   }
   el('winStatsLine').textContent = line;
+}
+function renderGroupSettings(){
+  var wrap = el('groupSettings');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  var groups = collectGroups();
+  var names = Object.keys(groups);
+  if(names.length === 0){
+    var empty = document.createElement('div');
+    empty.className = 'rec-empty';
+    empty.textContent = '暂无分组，可在上方添加分组';
+    wrap.appendChild(empty);
+    return;
+  }
+  names.forEach(function(g){
+    var row = document.createElement('div');
+    row.className = 'card-item';
+    var info = document.createElement('div');
+    info.style.flex = '1';
+    var nm = document.createElement('div');
+    nm.className = 'c-name';
+    var span = document.createElement('span');
+    span.style.fontWeight = '600';
+    span.textContent = g;
+    var small = document.createElement('small');
+    small.textContent = ' · ' + groups[g] + ' 张卡片';
+    nm.appendChild(span); nm.appendChild(small);
+    info.appendChild(nm);
+    var chk = document.createElement('label');
+    chk.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.style.cssText = 'width:16px;height:16px;accent-color:var(--accent)';
+    cb.checked = (state.settings.displayOnlyGroups || []).indexOf(g) !== -1;
+    cb.addEventListener('change', function(){
+      var arr = state.settings.displayOnlyGroups || (state.settings.displayOnlyGroups = []);
+      var idx = arr.indexOf(g);
+      if(cb.checked && idx === -1) arr.push(g);
+      if(!cb.checked && idx !== -1) arr.splice(idx, 1);
+      saveAll();
+      renderGroupSettings(); renderGallery(); renderTicker(); renderStatus();
+      toast(cb.checked ? '「' + g + '」设为仅展示，不再参与抽奖' : '「' + g + '」已恢复参与抽奖');
+    });
+    chk.appendChild(cb);
+    var st = document.createElement('span');
+    st.textContent = '仅展示';
+    chk.appendChild(st);
+    row.appendChild(info); row.appendChild(chk);
+    var del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'del';
+    del.title = '删除分组';
+    del.innerHTML = '&#10005;';
+    del.addEventListener('click', function(){
+      var cardNum = groups[g];
+      var confirmText = cardNum > 0
+        ? '删除分组「' + g + '」后，该分组的 ' + cardNum + ' 张卡片将回到「默认」分组，是否继续？'
+        : '确定删除分组「' + g + '」？';
+      confirmDialog('删除分组', confirmText).then(function(ok){
+        if(!ok) return;
+        var eg = state.settings.extraGroups || (state.settings.extraGroups = []);
+        var ei = eg.indexOf(g);
+        if(ei !== -1) eg.splice(ei, 1);
+        state.cards.forEach(function(c){
+          if((c.group || '默认') === g) c.group = '默认';
+        });
+        var arr = state.settings.displayOnlyGroups || [];
+        var di = arr.indexOf(g);
+        if(di !== -1) arr.splice(di, 1);
+        saveAll();
+        renderGroupSettings(); renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
+        toast('已删除分组「' + g + '」');
+      });
+    });
+    row.appendChild(del);
+    wrap.appendChild(row);
+  });
 }
 </script>
 <!-- ===== SCRIPT:INTERACT ===== -->
@@ -1822,7 +2245,15 @@ function saveReceiver(){
   var addr = el('recvAddr').value.trim();
   if(!name || !phone || !addr){ el('recvErr').textContent = '请填写完整的收货信息（名字/手机号/地址）'; return; }
   if(!/^1\d{10}$/.test(phone)){ el('recvErr').textContent = '手机号格式不正确（请输入 11 位手机号）'; return; }
-  if(pendingRecv) pendingRecv.receiver = { name: name, phone: phone, addr: addr };
+  /* 按名字+时间精确定位当前记录对象：云端合并会重建记录数组，旧引用会失效导致收货信息丢失 */
+  var cur = null;
+  if(pendingRecv){
+    state.records.forEach(function(r){
+      if(r.name === pendingRecv.name && r.time === pendingRecv.time) cur = r;
+    });
+  }
+  if(cur) cur.receiver = { name: name, phone: phone, addr: addr };
+  else if(pendingRecv) pendingRecv.receiver = { name: name, phone: phone, addr: addr };
   closeReceiver();
   saveAll();
   renderRecords();
@@ -1940,7 +2371,7 @@ function bindAdmin(){
     if(!name){ toast('请填写卡片名称'); return; }
     if(!file && !url){ toast('请选择图片文件或填写图片链接'); return; }
     var addImg = function(img){
-      state.cards.push({ id: uid('c'), name: name, weight: 1, img: img, stock: 1, base: 1 });
+      state.cards.push({ id: uid('c'), name: name, weight: 1, img: img, stock: 1, base: 1, group: '默认' });
       saveAll();
       renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
       el('newCardName').value = '';
@@ -1956,6 +2387,19 @@ function bindAdmin(){
     }else{
       addImg(url);
     }
+  });
+
+  el('btnAddGroup').addEventListener('click', function(){
+    var g = el('newGroupName').value.trim();
+    if(!g){ toast('请输入分组名'); return; }
+    var existing = collectGroups();
+    if(existing[g] !== undefined){ toast('分组「' + g + '」已存在'); return; }
+    var eg = state.settings.extraGroups || (state.settings.extraGroups = []);
+    eg.push(g);
+    saveAll();
+    renderGroupSettings();
+    el('newGroupName').value = '';
+    toast('已添加分组「' + g + '」');
   });
 
   el('btnAddName').addEventListener('click', function(){
@@ -2056,6 +2500,22 @@ function bindAdmin(){
     downloadJSON('小卡抽奖机备份-' + new Date().toISOString().slice(0,10) + '.json', state);
     toast('已导出备份文件');
   });
+  el('btnSaveGitee').addEventListener('click', function(){
+    var owner = el('giteeOwnerInput').value.trim();
+    var repo = el('giteeRepoInput').value.trim();
+    var token = el('giteeTokenInput').value.trim();
+    if(!owner || !repo || !token){ toast('请完整填写 Gitee 用户名、仓库名和私人令牌'); return; }
+    try{
+      localStorage.setItem(GITEE_OWNER_KEY, owner);
+      localStorage.setItem(GITEE_REPO_KEY, repo);
+      localStorage.setItem(GITEE_TOKEN_KEY, token);
+      renderAdminSettings();
+      toast('Gitee 配置已保存，正在同步…');
+      saveAll().then(function(ok){
+        if(ok) toast('已通过 Gitee 同步到云端');
+      });
+    }catch(e){ toast('保存失败'); }
+  });
   el('btnSaveToken').addEventListener('click', function(){
     var v = el('ghTokenInput').value.trim();
     if(!v){ toast('请输入 GitHub Token'); return; }
@@ -2094,7 +2554,7 @@ function bindAdmin(){
     reader.readAsText(f);
   });
   el('btnForceSync').addEventListener('click', function(){
-    ghSave().then(function(ok){ if(ok) toast('已同步到云端'); });
+    saveAll().then(function(ok){ if(ok) toast('已同步到云端'); });
   });
   el('btnResetPool').addEventListener('click', function(){
     confirmDialog('重置抽奖池', '所有卡片库存将恢复为初始数量，继续？').then(function(ok){
@@ -2133,7 +2593,30 @@ function bindAdmin(){
 }
 
 /* ===== 保存并同步 ===== */
-function saveAll(){ saveLocal(); ghSave(); }
+/* ===== 保存并同步（Gitee 唯一通道；极端情况才用 GitHub 兜底） ===== */
+var _syncingNow = false;
+var _pendingSync = false;
+function saveAll(){
+  saveLocal();
+  var cfg = giteeConfig();
+  /* 互斥：上一次同步尚未完成时，后续保存排队自动续传，避免并发 PUT 相互覆盖（库存回弹） */
+  if(_syncingNow){
+    _pendingSync = true;
+    setSync('loading', '上一次同步尚未完成，已排队等待…');
+    return Promise.resolve(true);
+  }
+  _syncingNow = true;
+  return giteeSave(0).then(function(ok){
+    _syncingNow = false;
+    if(ok) state._stockOverrideIds = null;
+    if(_pendingSync){ _pendingSync = false; return saveAll(); }
+    return ok;
+  }, function(err){
+    _syncingNow = false;
+    if(_pendingSync){ _pendingSync = false; return saveAll(); }
+    return false;
+  });
+}
 
 /* ===== 全量渲染 ===== */
 function fullRender(){
@@ -2150,6 +2633,10 @@ function init(){
   state = loadLocal() || defaultState();
   try{ adminLogged = sessionStorage.getItem('cardDrawAdmin') === '1'; }catch(e){ adminLogged = false; }
   el('noticeText').textContent = state.settings.notice || DEFAULT_NOTICE;
+  el('btnNetRetry').addEventListener('click', function(){
+    try{ el('netErrMask').classList.remove('open'); }catch(e){}
+    ghLoad().then(function(){ fullRender(); saveLocal(); });
+  });
   bindGate();
   bindStage();
   bindDrawControl();
