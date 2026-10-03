@@ -591,7 +591,7 @@ input,select,textarea{ font-family:inherit; }
       <div class="login-err" id="loginErr"></div>
     </div>
     <div id="adminView" style="display:none">
-      <div style="color:var(--text-faint);font-size:11px;text-align:center;margin-bottom:6px">吧唧抽奖机 · 版本 V1.0.12（若版本号旧请强制刷新页面）</div>
+      <div style="color:var(--text-faint);font-size:11px;text-align:center;margin-bottom:6px">吧唧抽奖机 · 版本 V1.0.13（若版本号旧请强制刷新页面）</div>
       <div class="sync-status" id="syncStatus">
         <span class="dot"></span><span id="syncText">数据连接中…</span>
       </div>
@@ -1167,6 +1167,12 @@ function mergeRemote(remote){
     }
     var out = Object.assign({}, c, { stock: newStock });
     if(ov && mine && typeof mine.base === 'number') out.base = mine.base;
+    /* 管理员维护的字段（名字/权重/分组）以本地为准：避免保存前的云端合并回滚刚改的字段 */
+    if(mine){
+      if(typeof mine.name === 'string' && mine.name) out.name = mine.name;
+      if(typeof mine.weight === 'number' && mine.weight >= 0) out.weight = mine.weight;
+      if(typeof mine.group === 'string' && mine.group) out.group = mine.group;
+    }
     return out;
   });
   /* 名单取并集：避免并发把管理员新加的名字清掉 */
@@ -1583,14 +1589,38 @@ function renderAdminCards(){
     var gl = document.createElement('span');
     gl.className = 'label-small';
     gl.textContent = '分组';
-    var g = document.createElement('input');
-    g.type = 'text';
+    var g = document.createElement('select');
     g.className = 'w-input';
-    g.style.width = '76px';
-    g.value = card.group || '默认';
-    g.title = '设置该吧唧的分组（同一组名即同一分组）';
+    g.style.width = '108px';
+    g.title = '选择该吧唧的分组（同一组名即同一分组）';
+    /* 下拉列出所有已有分组（含自建分组），并提供「＋ 新建分组」 */
+    var gOpts = collectGroups();
+    var gNames = Object.keys(gOpts);
+    var curGroup = card.group || '默认';
+    if(gNames.indexOf(curGroup) === -1) gNames.push(curGroup);
+    gNames.forEach(function(gn){
+      var o = document.createElement('option');
+      o.value = gn; o.textContent = gn;
+      g.appendChild(o);
+    });
+    var gNew = document.createElement('option');
+    gNew.value = '__new__';
+    gNew.textContent = '＋ 新建分组';
+    g.appendChild(gNew);
+    g.value = curGroup;
     g.addEventListener('change', function(){
-      var v = g.value.trim();
+      var v = g.value;
+      if(v === '__new__'){
+        var nn = window.prompt ? prompt('输入新分组名称：') : null;
+        if(nn === null || !String(nn).trim()){
+          toast('已取消新建分组，可在「分组设置」中添加');
+          g.value = curGroup;
+          return;
+        }
+        v = String(nn).trim();
+        var arr = state.settings.extraGroups || (state.settings.extraGroups = []);
+        if(arr.indexOf(v) === -1) arr.push(v);
+      }
       var cur = null;
       state.cards.forEach(function(c){ if(c.id === card.id) cur = c; });
       if(!cur) return;
