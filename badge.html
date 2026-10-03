@@ -971,7 +971,8 @@ function ghLoad(){
   }
   return ghLoadGitHub();
 }
-function ghLoadGitHub(){
+function ghLoadGitHub(attempt){
+  var attempt = attempt || 0;
   setSync('loading', '数据连接中…');
   /* 直读 GitHub Contents API：实时最新、无 CDN 缓存延迟；带 token 时配额 5000 次/时 */
   return fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH, { headers: ghHeaders(ghToken()) })
@@ -989,14 +990,21 @@ function ghLoadGitHub(){
       throw new Error('data.json 格式不符');
     })
     .catch(function(err){
+      var m = String(err && err.message ? err.message : err);
+      var retryable = /failed to fetch|network|timeout|abort|socket|ETIMEDOUT|ENOTFOUND|HTTP 5\d\d/i.test(m);
+      if(retryable && attempt < 2){
+        setSync('loading', '云端连接不稳定，正在自动重试（' + (attempt + 1) + '/2）…');
+        return new Promise(function(res){ setTimeout(function(){ res(ghLoadGitHub(attempt + 1)); }, 2500); });
+      }
       var local = loadLocal();
       state = local || defaultState();
-      if(local){ setSync('bad', '云端读取失败，使用本地缓存（' + err.message + '）'); }
-      else{ setSync('bad', '云端读取失败，使用初始数据'); }
+      if(local){ setSync('bad', '云端读取失败，当前为上次本地缓存，可能不是最新数据（' + m + '）。可点击页面底部「立即同步」或刷新重试'); }
+      else{ setSync('bad', '云端读取失败，当前为初始数据（' + m + '）'); }
       return false;
     });
 }
-function giteeLoad(){
+function giteeLoad(attempt){
+  var attempt = attempt || 0;
   var cfg = giteeConfig();
   if(!cfg) return Promise.resolve(false);
   setSync('loading', '数据连接中…');
@@ -1019,6 +1027,15 @@ function giteeLoad(){
       applyCloudState(s, j.sha || null);
       setSync('ok', '数据已从云端加载（Gitee 码云）');
       return true;
+    })
+    .catch(function(err){
+      var m = String(err && err.message ? err.message : err);
+      var retryable = /failed to fetch|network|timeout|abort|socket|ETIMEDOUT|ENOTFOUND|HTTP 5\d\d/i.test(m);
+      if(retryable && attempt < 2){
+        setSync('loading', '云端连接不稳定，正在自动重试（' + (attempt + 1) + '/2）…');
+        return new Promise(function(res){ setTimeout(function(){ res(giteeLoad(attempt + 1)); }, 2500); });
+      }
+      throw err;
     });
 }
 function ghSaveGitHub(attempt){
