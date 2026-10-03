@@ -746,11 +746,11 @@ var DEFAULT_STOCK = 3;
 var BACK_DEFAULT = 'https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/KXq0bby7loGcgZxZRA6cYThVnDh';
 var DEFAULT_NOTICE = '邮费自理 · 每个账号限抽一次';
 var INITIAL_CARDS = [
-  {id:'c01', name:'吧唧 01', weight:1, stock:3, base:3, img:'assets/badge-01.png'},
-  {id:'c02', name:'吧唧 02', weight:1, stock:3, base:3, img:'assets/badge-02.jpg'},
-  {id:'c03', name:'吧唧 03', weight:1, stock:3, base:3, img:'assets/badge-03.jpg'},
-  {id:'c04', name:'吧唧 04', weight:1, stock:3, base:3, img:'assets/badge-04.jpg'},
-  {id:'c05', name:'吧唧 05', weight:1, stock:3, base:3, img:'assets/badge-05.jpg'}
+  {id:'c01', name:'吧唧 01', weight:1, stock:0, base:0, img:'assets/badge-01.png'},
+  {id:'c02', name:'吧唧 02', weight:1, stock:0, base:0, img:'assets/badge-02.jpg'},
+  {id:'c03', name:'吧唧 03', weight:1, stock:0, base:0, img:'assets/badge-03.jpg'},
+  {id:'c04', name:'吧唧 04', weight:1, stock:0, base:0, img:'assets/badge-04.jpg'},
+  {id:'c05', name:'吧唧 05', weight:1, stock:0, base:0, img:'assets/badge-05.jpg'}
 ];
 
 /* ===== 状态 ===== */
@@ -2107,7 +2107,7 @@ function bindAdmin(){
     });
   });
   el('btnReset').addEventListener('click', function(){
-    confirmDialog('恢复出厂', '将清空全部数据（吧唧、名单、记录）并恢复初始 8 张吧唧，是否继续？').then(function(ok){
+    confirmDialog('恢复出厂', '将清空全部数据（吧唧、名单、记录）并恢复初始 5 张吧唧，是否继续？').then(function(ok){
       if(!ok) return;
       try{ localStorage.removeItem(LS_KEY); }catch(e){}
       state = defaultState();
