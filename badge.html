@@ -591,7 +591,7 @@ input,select,textarea{ font-family:inherit; }
       <div class="login-err" id="loginErr"></div>
     </div>
     <div id="adminView" style="display:none">
-      <div style="color:var(--text-faint);font-size:11px;text-align:center;margin-bottom:6px">吧唧抽奖机 · 版本 V1.0.10（若版本号旧请强制刷新页面）</div>
+      <div style="color:var(--text-faint);font-size:11px;text-align:center;margin-bottom:6px">吧唧抽奖机 · 版本 V1.0.11（若版本号旧请强制刷新页面）</div>
       <div class="sync-status" id="syncStatus">
         <span class="dot"></span><span id="syncText">数据连接中…</span>
       </div>
@@ -1529,7 +1529,11 @@ function renderAdminCards(){
     input.addEventListener('change', function(){
       var v = input.value.trim();
       if(!v){ input.value = card.name; toast('名字不能为空'); return; }
-      card.name = v;
+      /* 通过 id 从当前 state.cards 查找：同步合并可能已替换数组，闭包里的 card 可能已失效 */
+      var cur = null;
+      state.cards.forEach(function(c){ if(c.id === card.id) cur = c; });
+      if(!cur) return;
+      cur.name = v;
       saveAll();
       renderGallery(); renderTicker();
       toast('已修改吧唧名字');
@@ -1548,10 +1552,14 @@ function renderAdminCards(){
     q.title = '设置该卡当前库存（同时作为重置后的初始数量）';
     q.addEventListener('change', function(){
       var v = Math.max(0, parseInt(q.value, 10) || 0);
-      card.stock = v; card.base = v;
+      /* 通过 id 从当前 state.cards 查找：同步合并可能已替换数组，闭包里的 card 可能已失效 */
+      var cur = null;
+      state.cards.forEach(function(c){ if(c.id === card.id) cur = c; });
+      if(!cur) return;
+      cur.stock = v; cur.base = v;
       /* 标记本次为管理员手动设置：云端合并时以本地新值为准，避免被「库存只减不增」逻辑砍回旧值 */
       state._stockOverrideIds = state._stockOverrideIds || {};
-      state._stockOverrideIds[card.id] = true;
+      state._stockOverrideIds[cur.id] = true;
       saveAll();
       renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
       toast('已更新库存');
@@ -1564,7 +1572,10 @@ function renderAdminCards(){
     w.className = 'w-input';
     w.value = card.weight;
     w.addEventListener('change', function(){
-      card.weight = Math.max(0, parseInt(w.value, 10) || 0);
+      var cur = null;
+      state.cards.forEach(function(c){ if(c.id === card.id) cur = c; });
+      if(!cur) return;
+      cur.weight = Math.max(0, parseInt(w.value, 10) || 0);
       saveAll();
     });
     var gl = document.createElement('span');
@@ -1578,7 +1589,10 @@ function renderAdminCards(){
     g.title = '设置该吧唧的分组（同一组名即同一分组）';
     g.addEventListener('change', function(){
       var v = g.value.trim();
-      card.group = v || '默认';
+      var cur = null;
+      state.cards.forEach(function(c){ if(c.id === card.id) cur = c; });
+      if(!cur) return;
+      cur.group = v || '默认';
       saveAll();
       renderAdminCards(); renderGroupSettings(); renderGallery(); renderTicker(); renderStatus();
       toast('已更新分组');
@@ -2453,13 +2467,28 @@ function bindAdmin(){
 }
 
 /* ===== 保存并同步（只走 Gitee；未配置 Gitee 时才用 GitHub 兜底） ===== */
+var _syncingNow = false;
+var _pendingSync = false;
 function saveAll(){
   saveLocal();
   var cfg = giteeConfig();
-  if(cfg){
-    return giteeSave(0);
+  if(!cfg) return ghSaveGitHub(0);
+  /* 互斥：上一次同步尚未完成时，后续保存排队自动续传，避免并发 PUT 相互覆盖（库存回弹） */
+  if(_syncingNow){
+    _pendingSync = true;
+    setSync('loading', '上一次同步尚未完成，已排队等待…');
+    return Promise.resolve(true);
   }
-  return ghSaveGitHub(0);
+  _syncingNow = true;
+  return giteeSave(0).then(function(ok){
+    _syncingNow = false;
+    if(_pendingSync){ _pendingSync = false; return saveAll(); }
+    return ok;
+  }, function(err){
+    _syncingNow = false;
+    if(_pendingSync){ _pendingSync = false; return saveAll(); }
+    return false;
+  });
 }
 function giteeSave(attempt){
   var attempt = attempt || 0;
@@ -2507,16 +2536,16 @@ function giteeSave(attempt){
         _syncRetrying = true;
         showSyncOverlay('云端冲突，正在合并重试…');
         setSync('loading', '云端冲突，正在合并重试…');
-        setTimeout(function(){ _syncRetrying = false; giteeSave(attempt + 1); }, 2000);
-        return { pendingRetry: true };
+        return new Promise(function(r){ setTimeout(r, 2000); })
+          .then(function(){ _syncRetrying = false; return giteeSave(attempt + 1); });
       }
       /* 防御：Gitee 文件已存在但本次用了 POST（旧逻辑残留/极端情况）→ 重新 GET 拿 sha 后转 PUT */
       if(res && res.status === 400 && attempt < 2){
         _syncRetrying = true;
         showSyncOverlay('云端文件已存在，正在改用更新模式重试…');
         setSync('loading', '云端文件已存在，正在改用更新模式重试…');
-        setTimeout(function(){ _syncRetrying = false; giteeSave(attempt + 1); }, 1500);
-        return { pendingRetry: true };
+        return new Promise(function(r){ setTimeout(r, 1500); })
+          .then(function(){ _syncRetrying = false; return giteeSave(attempt + 1); });
       }
       if(res && !res.ok) throw new Error('HTTP ' + res.status);
       if(res && res.pendingRetry) return res;
@@ -2538,10 +2567,12 @@ function giteeSave(attempt){
         _syncRetrying = true;
         showSyncOverlay('云端连接不稳定，正在自动重试（' + (attempt + 1) + '/4）…');
         setSync('loading', '云端连接不稳定，正在自动重试…');
-        setTimeout(function(){ _syncRetrying = false; giteeSave(attempt + 1); }, 5000);
+        return new Promise(function(r){ setTimeout(r, 5000); })
+          .then(function(){ _syncRetrying = false; return giteeSave(attempt + 1); });
       }
       else setSync('bad', '云端同步失败，数据已暂存本地（' + m + '）');
       saveLocal();
+      return Promise.reject(err);
       return false;
     }).finally(function(){
       if(!_syncRetrying) hideSyncOverlay();
