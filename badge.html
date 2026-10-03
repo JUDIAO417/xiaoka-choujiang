@@ -607,7 +607,11 @@ input,select,textarea{ font-family:inherit; }
         <div class="adm-sec-title">吧唧列表</div>
         <div class="card-list" id="cardList"></div>
         <div class="adm-sec-title">分组设置</div>
-        <div class="form-hint">给吧唧设置分组（在列表的分组输入框中填写组名）；勾选「仅展示」的分组只展示、不参与抽奖——该组的吧唧不会被抽中，但仍显示在巡览与图库中。分组由吧唧的分组名自动生成。</div>
+        <div class="form-hint">可以自己添加、删除分组：给吧唧设置分组（在列表的分组输入框中填写组名），或先在这里添加分组再把吧唧归入。勾选「仅展示」的分组只展示、不参与抽奖——该组的吧唧不会被抽中，但仍显示在巡览与图库中。</div>
+        <div class="form-row">
+          <input type="text" id="newGroupName" placeholder="输入新分组名">
+          <button id="btnAddGroup" class="btn" type="button">添加分组</button>
+        </div>
         <div id="groupSettings"></div>
       </div>
       <div class="adm-section" id="tab-names">
@@ -771,7 +775,7 @@ var isDrawing = false;
 function defaultState(){
   return {
     version: 4,
-    settings: { weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false, displayOnlyGroups: [] },
+    settings: { weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false, displayOnlyGroups: [], extraGroups: [] },
     cards: INITIAL_CARDS.map(function(c){ return Object.assign({}, c); }),
     names: [],
     records: []
@@ -787,7 +791,7 @@ function migrateState(s){
       c.base = (typeof c.base === 'number' && c.base >= 0) ? c.base : c.stock;
       if(!c.group) c.group = '默认';
     });
-    s.settings = Object.assign({ weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false, displayOnlyGroups: [] }, s.settings || {});
+    s.settings = Object.assign({ weightMode: 'equal', backUrl: BACK_DEFAULT, notice: DEFAULT_NOTICE, emptyRate: 10, minWinners: 0, locked: false, displayOnlyGroups: [], extraGroups: [] }, s.settings || {});
   }
   return s;
 }
@@ -1250,20 +1254,27 @@ function buildRecRow(r){
 }
 
 /* ===== 管理员视图 ===== */
+function collectGroups(){
+  var set = {};
+  state.cards.forEach(function(c){
+    var g = (c.group || '默认');
+    set[g] = (set[g] || 0) + 1;
+  });
+  (state.settings.extraGroups || []).forEach(function(g){
+    if(!set[g]) set[g] = 0;
+  });
+  return set;
+}
 function renderGroupSettings(){
   var wrap = el('groupSettings');
   if(!wrap) return;
   wrap.innerHTML = '';
-  var groups = {};
-  state.cards.forEach(function(c){
-    var g = (c.group || '默认');
-    groups[g] = (groups[g] || 0) + 1;
-  });
+  var groups = collectGroups();
   var names = Object.keys(groups);
   if(names.length === 0){
     var empty = document.createElement('div');
     empty.className = 'rec-empty';
-    empty.textContent = '暂无分组（吧唧默认属于「默认」分组）';
+    empty.textContent = '暂无分组，可在上方添加分组';
     wrap.appendChild(empty);
     return;
   }
@@ -1298,9 +1309,36 @@ function renderGroupSettings(){
     });
     chk.appendChild(cb);
     var st = document.createElement('span');
-    st.textContent = '仅展示（不参与抽奖）';
+    st.textContent = '仅展示';
     chk.appendChild(st);
     row.appendChild(info); row.appendChild(chk);
+    var del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'del';
+    del.title = '删除分组';
+    del.innerHTML = '&#10005;';
+    del.addEventListener('click', function(){
+      var cardNum = groups[g];
+      var confirmText = cardNum > 0
+        ? '删除分组「' + g + '」后，该分组的 ' + cardNum + ' 张吧唧将回到「默认」分组，是否继续？'
+        : '确定删除分组「' + g + '」？';
+      confirmDialog('删除分组', confirmText).then(function(ok){
+        if(!ok) return;
+        var eg = state.settings.extraGroups || (state.settings.extraGroups = []);
+        var ei = eg.indexOf(g);
+        if(ei !== -1) eg.splice(ei, 1);
+        state.cards.forEach(function(c){
+          if((c.group || '默认') === g) c.group = '默认';
+        });
+        var arr = state.settings.displayOnlyGroups || [];
+        var di = arr.indexOf(g);
+        if(di !== -1) arr.splice(di, 1);
+        saveAll();
+        renderGroupSettings(); renderAdminCards(); renderGallery(); renderTicker(); renderStatus();
+        toast('已删除分组「' + g + '」');
+      });
+    });
+    row.appendChild(del);
     wrap.appendChild(row);
   });
 }
@@ -2033,6 +2071,19 @@ function bindAdmin(){
   });
   el('recvPhone').addEventListener('keydown', function(e){
     if(e.key === 'Enter') saveReceiver();
+  });
+
+  el('btnAddGroup').addEventListener('click', function(){
+    var g = el('newGroupName').value.trim();
+    if(!g){ toast('请输入分组名'); return; }
+    var existing = collectGroups();
+    if(existing[g] !== undefined){ toast('分组「' + g + '」已存在'); return; }
+    var eg = state.settings.extraGroups || (state.settings.extraGroups = []);
+    eg.push(g);
+    saveAll();
+    renderGroupSettings();
+    el('newGroupName').value = '';
+    toast('已添加分组「' + g + '」');
   });
 
   el('btnAddCard').addEventListener('click', function(){
