@@ -110,12 +110,12 @@
     "minWinners": 0,
     "locked": false,
     "displayOnlyGroups": [],
-    "extraGroups": [],
+    "extraGroups": [
+      "测试"
+    ],
     "purgedAt": 1790988098447
   },
   "version": 4,
   "_purgeRecords": false,
-  "_stockOverrideIds": {
-    "b01": true
-  }
+  "_stockOverrideIds": {}
 }
