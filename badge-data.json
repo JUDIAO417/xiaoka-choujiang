@@ -113,7 +113,7 @@
     "notice": "邮费自理 · 每个账号限抽一次",
     "emptyRate": 0,
     "minWinners": 0,
-    "locked": false,
+    "locked": true,
     "displayOnlyGroups": [
       "默认"
     ],
