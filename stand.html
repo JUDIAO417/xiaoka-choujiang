@@ -164,11 +164,13 @@ input,select,textarea{ font-family:inherit; }
 }
 .face img{
   width:100%; height:100%; object-fit:contain;
-  /* 亚克力沿PNG人物轮廓：亮边 + 厚度投影 */
+  /* 厚亚克力：沿轮廓一圈挤出透明切边 + 落地投影 */
   filter:
-    drop-shadow(0 0 1.5px rgba(255,255,255,.85))
-    drop-shadow(0 0 3px rgba(232,195,126,.35))
-    drop-shadow(0 3px 4px rgba(0,0,0,.45));
+    drop-shadow(1.5px 1px 0 rgba(255,255,255,.55))
+    drop-shadow(-1.5px 1px 0 rgba(255,255,255,.4))
+    drop-shadow(0 1.5px 0 rgba(200,210,235,.45))
+    drop-shadow(0 2px 3px rgba(0,0,0,.3))
+    drop-shadow(0 7px 11px rgba(0,0,0,.5));
 }
 .face-back{ transform:rotateY(180deg); }
 .face-frame::after{ content:none; }
