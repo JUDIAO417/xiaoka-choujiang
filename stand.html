@@ -971,7 +971,8 @@ function giteeConfig(){
     var token = localStorage.getItem(GITEE_TOKEN_KEY);
     if(owner && repo && token) return { owner: owner, repo: repo, token: token };
   }catch(e){}
-  return null;
+  /* 内置默认：开箱即连 Gitee（新访客浏览器无需手动配置） */
+  return { owner:'sykjsj', repo:'badge-sync', token:'54217db0ce6e39c263c7bd1cbd1003eb' };
 }
 function applyCloudState(s, sha){
   migrateState(s);
