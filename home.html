@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>周边抽奖 · 入口导航</title>
+<style>
+  :root{
+    --bg:#0a0820; --panel:#1b1538; --panel-2:#241c49;
+    --line:#332a63; --line-strong:#4a3d85;
+    --text:#ece8ff; --text-dim:#a89ecf; --text-faint:#6f6599;
+    --gold:#e8c37e; --accent:#a78bfa; --accent-2:#7c5ce0;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    font-family:"Noto Sans SC", system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(800px 500px at 50% -10%, rgba(124,92,224,.18), transparent 60%),
+      linear-gradient(180deg, #0d0a26 0%, #0a0820 100%);
+    color:var(--text);
+    min-height:100vh;
+    padding:40px 18px 60px;
+  }
+  .wrap{ max-width:760px; margin:0 auto; }
+  .head{ text-align:center; margin-bottom:40px; }
+  .head h1{
+    font-family:"Noto Serif SC", serif; font-weight:700; font-size:30px; letter-spacing:.08em;
+  }
+  .head .sub{ margin-top:10px; color:var(--text-faint); font-size:13px; letter-spacing:.15em; }
+
+  .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:640px){ .grid{ grid-template-columns:1fr; } }
+
+  .item{
+    position:relative;
+    background:linear-gradient(180deg, var(--panel), rgba(27,21,56,.6));
+    border:1px solid var(--line); border-radius:18px;
+    padding:26px 18px 22px; text-align:center;
+    cursor:pointer; user-select:none; -webkit-user-select:none;
+    transition:transform .2s, border-color .2s;
+    overflow:hidden;
+  }
+  .item:active{ transform:scale(.98); }
+  .item.on{ border-color:rgba(232,195,126,.4); }
+  .item .thumb{
+    width:100%; aspect-ratio:3/4; border-radius:10px;
+    background:var(--panel-2); margin-bottom:14px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    font-size:42px; font-family:"Noto Serif SC",serif; color:var(--text-faint);
+  }
+  .item .thumb img{ width:100%; height:100%; object-fit:cover; }
+  .item .name{ font-family:"Noto Serif SC",serif; font-weight:700; font-size:17px; }
+  .item .desc{ margin-top:6px; font-size:12px; color:var(--text-faint); }
+
+  /* 指示灯 */
+  .lamp{
+    position:absolute; top:14px; right:14px;
+    width:14px; height:14px; border-radius:50%;
+    background:#3a3360; box-shadow:inset 0 1px 2px rgba(0,0,0,.5);
+    transition:all .3s;
+  }
+  .item.on .lamp{
+    background:var(--gold);
+    box-shadow:0 0 10px rgba(232,195,126,.9), 0 0 20px rgba(232,195,126,.4);
+  }
+
+  /* 灭灯遮罩 */
+  .item.off .thumb{ filter:grayscale(.7) brightness(.55); }
+  .item.off .name, .item.off .desc{ color:var(--text-faint); }
+
+  .foot{ margin-top:36px; text-align:center; color:var(--text-faint); font-size:11px; letter-spacing:.1em; }
+
+  /* 提示 toast */
+  .toast{
+    position:fixed; left:50%; bottom:60px; transform:translateX(-50%) translateY(20px);
+    background:rgba(20,15,45,.95); border:1px solid var(--line-strong);
+    color:var(--text); padding:12px 22px; border-radius:24px; font-size:14px;
+    opacity:0; pointer-events:none; transition:all .3s; z-index:99;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* 密码弹窗 */
+  .mask{
+    position:fixed; inset:0; background:rgba(5,3,15,.7); z-index:50;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .mask.open{ display:flex; }
+  .dlg{
+    background:var(--panel); border:1px solid var(--line-strong); border-radius:16px;
+    padding:26px; width:100%; max-width:340px;
+  }
+  .dlg h3{ font-size:16px; margin-bottom:14px; text-align:center; }
+  .dlg input{
+    width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line);
+    background:var(--panel-2); color:var(--text); font-size:15px; outline:none;
+  }
+  .dlg input:focus{ border-color:var(--accent); }
+  .dlg .row{ display:flex; gap:10px; margin-top:14px; }
+  .dlg button{
+    flex:1; padding:11px; border:none; border-radius:10px; font-size:14px; cursor:pointer;
+  }
+  .dlg .ok{ background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; }
+  .dlg .cancel{ background:transparent; color:var(--text-dim); border:1px solid var(--line); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>周边抽奖</h1>
+    <div class="sub">CHOOSE YOUR PRIZE</div>
+  </div>
+
+  <div class="grid">
+    <div class="item" data-key="card" data-url="index.html">
+      <span class="lamp"></span>
+      <div class="thumb"><img src="assets/card-01.jpg" alt=""></div>
+      <div class="name">小卡抽奖</div>
+      <div class="desc">收藏卡池 · 4张/轮</div>
+    </div>
+    <div class="item" data-key="badge" data-url="badge.html">
+      <span class="lamp"></span>
+      <div class="thumb"><img src="assets/badge-02.jpg" alt=""></div>
+      <div class="name">吧唧抽奖</div>
+      <div class="desc">徽章吧唧 · 4张/轮</div>
+    </div>
+    <div class="item" data-key="stand" data-url="stand.html">
+      <span class="lamp"></span>
+      <div class="thumb"><img src="assets/stand-01.png" alt=""></div>
+      <div class="name">立牌抽奖</div>
+      <div class="desc">亚克力立牌 · 4张/轮</div>
+    </div>
+  </div>
+
+  <div class="foot">长按卡片可由管理员控制开关</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="mask" id="pwdMask">
+  <div class="dlg">
+    <h3>管理员验证</h3>
+    <input type="password" id="pwdInput" placeholder="请输入管理员密码">
+    <div class="row">
+      <button class="cancel" id="pwdCancel">取消</button>
+      <button class="ok" id="pwdOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var ADMIN_PWD = 'wd198114+';
+var GITEE_OWNER = 'sykjsj';
+var GITEE_REPO = 'badge-sync';
+var GITEE_TOKEN = '54217db0ce6e39c263c7bd1cbd1003eb';
+var FILE = 'nav-state.json';
+var LS_KEY = 'navLights_v1';
+
+var state = { card:true, badge:true, stand:true };
+var longPressTimer = null;
+var targetKey = null;
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+function giteeApi(method, body){
+  var url = 'https://gitee.com/api/v5/repos/' + GITEE_OWNER + '/' + GITEE_REPO + '/contents/' + FILE + '?access_token=' + GITEE_TOKEN;
+  return fetch(url, {
+    method: method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined
+  }).then(function(r){ return r.json().then(function(j){ return { status: r.status, data: j }; }); });
+}
+
+function loadState(){
+  return giteeApi('GET').then(function(res){
+    if(res.status === 200 && res.data && res.data.content){
+      var s = JSON.parse(decodeURIComponent(escape(atob(res.data.content))));
+      state = Object.assign(state, s);
+      state._sha = res.data.sha;
+    } else {
+      // 首次：用本地默认（全亮），等管理员首次切换时 POST 创建
+      try{
+        var raw = localStorage.getItem(LS_KEY);
+        if(raw) state = Object.assign(state, JSON.parse(raw));
+      }catch(e){}
+    }
+    render();
+  }).catch(function(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      if(raw) state = Object.assign(state, JSON.parse(raw));
+    }catch(e){}
+    render();
+  });
+}
+
+function saveState(){
+  var payload = { card: state.card, badge: state.badge, stand: state.stand };
+  localStorage.setItem(LS_KEY, JSON.stringify(payload));
+  var body = {
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(payload)))),
+    message: 'nav lights update'
+  };
+  if(state._sha) body.sha = state._sha;
+  var method = state._sha ? 'PUT' : 'POST';
+  return giteeApi(method, body).then(function(res){
+    if(res.status === 200 || res.status === 201){
+      state._sha = res.data && res.data.content && res.data.content.sha;
+    } else if(state._sha){
+      // sha 失效则刷新后重试
+      return giteeApi('GET').then(function(r2){
+        if(r2.status === 200 && r2.data && r2.data.sha){
+          state._sha = r2.data.sha;
+          body.sha = state._sha;
+          return giteeApi(method, body);
+        }
+      });
+    }
+  });
+}
+
+function render(){
+  document.querySelectorAll('.item').forEach(function(el){
+    var k = el.getAttribute('data-key');
+    el.classList.toggle('on', !!state[k]);
+    el.classList.toggle('off', !state[k]);
+  });
+}
+
+/* 长按检测（550ms） */
+document.querySelectorAll('.item').forEach(function(el){
+  var key = el.getAttribute('data-key');
+  var start = function(){
+    longPressTimer = setTimeout(function(){
+      targetKey = key;
+      document.getElementById('pwdMask').classList.add('open');
+      document.getElementById('pwdInput').value = '';
+      setTimeout(function(){ document.getElementById('pwdInput').focus(); }, 50);
+    }, 550);
+  };
+  var cancel = function(){ if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer = null; } };
+
+  el.addEventListener('mousedown', start);
+  el.addEventListener('touchstart', start, { passive: true });
+  el.addEventListener('mouseup', cancel);
+  el.addEventListener('mouseleave', cancel);
+  el.addEventListener('touchend', cancel);
+  el.addEventListener('touchcancel', cancel);
+
+  el.addEventListener('click', function(){
+    if(!state[key]){
+      toast('活动暂未开启，请等待管理员通知');
+      return;
+    }
+    window.location.href = el.getAttribute('data-url');
+  });
+});
+
+/* 密码弹窗 */
+document.getElementById('pwdCancel').onclick = function(){
+  document.getElementById('pwdMask').classList.remove('open');
+};
+document.getElementById('pwdOk').onclick = function(){
+  var v = document.getElementById('pwdInput').value;
+  if(v !== ADMIN_PWD){ toast('密码错误'); return; }
+  state[targetKey] = !state[targetKey];
+  document.getElementById('pwdMask').classList.remove('open');
+  render();
+  toast(state[targetKey] ? '已开启' : '已关闭');
+  saveState();
+};
+document.getElementById('pwdInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') document.getElementById('pwdOk').click();
+});
+
+loadState();
+</script>
+</body>
+</html>
